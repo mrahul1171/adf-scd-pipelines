@@ -1,0 +1,338 @@
+{
+	"name": "PL_SCD2_RT",
+	"properties": {
+		"activities": [
+			{
+				"name": "LKP_watermark",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "DS_watermark",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "DF_SCD2_RT",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "LKP_watermark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_SCD2_RT",
+						"type": "DataFlowReference",
+						"parameters": {
+							"p_watermark": {
+								"value": "'@{activity('LKP_watermark').output.firstRow.last_run_ts}'",
+								"type": "Expression"
+							},
+							"p_effDate": {
+								"value": "'@{formatDateTime(concat(substring(pipeline().parameters.p_fileName,15,4),'-',substring(pipeline().parameters.p_fileName,19,2),'-',substring(pipeline().parameters.p_fileName,21,2)),'yyyy-MM-dd')}'",
+								"type": "Expression"
+							},
+							"p_fileName": {
+								"value": "'@{pipeline().parameters.p_fileName}'",
+								"type": "Expression"
+							},
+							"p_batchId": {
+								"value": "'@{pipeline().RunId}'",
+								"type": "Expression"
+							}
+						},
+						"datasetParameters": {
+							"srcCsv": {
+								"p_file": {
+									"value": "@pipeline().parameters.p_fileName",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "CP_archive",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "DF_SCD2_RT",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_csv_in",
+						"type": "DatasetReference",
+						"parameters": {
+							"p_file": {
+								"value": "@pipeline().parameters.p_fileName",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_processed",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "DEL_source",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "CP_archive",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DS_csv_in",
+						"type": "DatasetReference",
+						"parameters": {
+							"p_file": {
+								"value": "@pipeline().parameters.p_fileName",
+								"type": "Expression"
+							}
+						}
+					},
+					"enableLogging": false,
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "CP_watermark",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "DEL_source",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT '@{formatDateTime(utcNow(),'yyyy-MM-dd HH:mm:ss')}' AS last_run_ts,\n       '@{formatDateTime(concat(substring(pipeline().parameters.p_fileName,15,4),'-',substring(pipeline().parameters.p_fileName,19,2),'-',substring(pipeline().parameters.p_fileName,21,2)),'yyyy-MM-dd')}' AS last_effective_date",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_dim_rt",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_watermark",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "WEB_success",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "CP_watermark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"url": "https://prod-115.westus.logic.azure.com:443/workflows/056053ac828741bdb448559fef12c58f/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=tCfwCCTVdaW2HXW-y3mk6hVDt0qer0SsqOtb2jJ5LaU",
+					"body": {
+						"value": "{\n \"pipeline\": \"@{pipeline().Pipeline}\",\n \"runId\": \"@{pipeline().RunId}\",\n \"status\": \"SUCCESS\",\n \"file\": \"@{pipeline().parameters.p_fileName}\",\n \"message\": \"Inserted: @{activity('DF_SCD2_RT').output.runStatus.metrics.sinkInsert.rowsWritten} | Expired: @{activity('DF_SCD2_RT').output.runStatus.metrics.sinkExpire.rowsWritten}\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "WEB_fail",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "DF_SCD2_RT",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"url": "https://prod-115.westus.logic.azure.com:443/workflows/056053ac828741bdb448559fef12c58f/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=tCfwCCTVdaW2HXW-y3mk6hVDt0qer0SsqOtb2jJ5LaU",
+					"body": {
+						"value": "{\n \"pipeline\": \"@{pipeline().Pipeline}\",\n \"runId\": \"@{pipeline().RunId}\",\n \"status\": \"FAILED\",\n \"file\": \"@{pipeline().parameters.p_fileName}\",\n \"message\": \"@{activity('DF_SCD2_RT').error.message}\"\n}",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"concurrency": 1,
+		"parameters": {
+			"p_fileName": {
+				"type": "string",
+				"defaultValue": "customer_delta_20260701.csv"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-07-20T20:06:23Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

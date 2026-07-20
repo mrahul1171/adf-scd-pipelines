@@ -1,0 +1,58 @@
+{
+	"name": "DS_dim_customer3",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabaseDS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "customer_sk",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "customer_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "customer_name",
+				"type": "varchar"
+			},
+			{
+				"name": "email",
+				"type": "varchar"
+			},
+			{
+				"name": "current_city",
+				"type": "varchar"
+			},
+			{
+				"name": "previous_city",
+				"type": "varchar"
+			},
+			{
+				"name": "city_change_date",
+				"type": "date"
+			},
+			{
+				"name": "source_file",
+				"type": "varchar"
+			},
+			{
+				"name": "dw_update_dt",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "dim_customer3"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

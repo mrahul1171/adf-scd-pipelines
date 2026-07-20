@@ -1,0 +1,266 @@
+{
+	"name": "DF_SCD2",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_src_customer2",
+						"type": "DatasetReference"
+					},
+					"name": "srcCustomer"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_dim_customer2",
+						"type": "DatasetReference"
+					},
+					"name": "dimCustomer"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_dim_customer2",
+						"type": "DatasetReference"
+					},
+					"name": "sinkInsert"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_dim_customer2",
+						"type": "DatasetReference"
+					},
+					"name": "sinkExpire"
+				}
+			],
+			"transformations": [
+				{
+					"name": "winRank"
+				},
+				{
+					"name": "fltLatest"
+				},
+				{
+					"name": "drvHash"
+				},
+				{
+					"name": "fltCurrent"
+				},
+				{
+					"name": "lkpCurrent"
+				},
+				{
+					"name": "drvAction",
+					"description": "Creating/updating the columns 'customer_id, customer_name, email, city, customer_tier, updated_at, rn, hash_scd2, customer_sk, customer_id, customer_name, email, city, customer_tier, hash_scd2, effective_start_date, effective_end_date, is_current, action'"
+				},
+				{
+					"name": "splitAction"
+				},
+				{
+					"name": "unionNew"
+				},
+				{
+					"name": "selInsertClean"
+				},
+				{
+					"name": "selDimRename"
+				},
+				{
+					"name": "drvVersion"
+				},
+				{
+					"name": "selClean"
+				},
+				{
+					"name": "alterInsert"
+				},
+				{
+					"name": "selExpire"
+				},
+				{
+					"name": "drvExpire"
+				},
+				{
+					"name": "alterExpire"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     p_watermark as string ('1900-01-01')",
+				"}",
+				"source(output(",
+				"          customer_id as integer,",
+				"          customer_name as string,",
+				"          email as string,",
+				"          city as string,",
+				"          customer_tier as string,",
+				"          updated_at as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: (\"SELECT * FROM src_customer2 WHERE updated_at > '{$p_watermark}'\"),",
+				"     format: 'query') ~> srcCustomer",
+				"source(output(",
+				"          customer_sk as integer,",
+				"          customer_id as integer,",
+				"          customer_name as string,",
+				"          email as string,",
+				"          city as string,",
+				"          customer_tier as string,",
+				"          hash_scd2 as string,",
+				"          effective_start_date as date,",
+				"          effective_end_date as date,",
+				"          is_current as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimCustomer",
+				"srcCustomer window(over(customer_id),",
+				"     desc(updated_at, true),",
+				"     rn = rowNumber()) ~> winRank",
+				"winRank filter(rn == 1) ~> fltLatest",
+				"fltLatest derive(hash_scd2 = md5(concat(iifNull(city,'~'),'|',iifNull(customer_tier,'~')))) ~> drvHash",
+				"dimCustomer filter(is_current == 'Y') ~> fltCurrent",
+				"drvHash, selDimRename lookup(customer_id == dim_customer_id,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lkpCurrent",
+				"lkpCurrent derive(dim_action = iif(isNull(dim_customer_id), 'INSERT', iif(dim_hash_scd2 != hash_scd2, 'SCD2', 'NOCHANGE'))) ~> drvAction",
+				"drvAction split(dim_action == 'INSERT',",
+				"     dim_action == 'SCD2',",
+				"     disjoint: false) ~> splitAction@(streamInsert, streamSCD2, streamNoChange)",
+				"selInsertClean, splitAction@streamSCD2 union(byName: true)~> unionNew",
+				"splitAction@streamInsert select(mapColumn(",
+				"          customer_id,",
+				"          customer_name,",
+				"          email,",
+				"          city,",
+				"          customer_tier,",
+				"          updated_at,",
+				"          rn,",
+				"          hash_scd2 = {splitAction@streamInsert@hash_scd2},",
+				"          dim_customer_sk,",
+				"          dim_customer_id,",
+				"          dim_customer_name,",
+				"          dim_email,",
+				"          dim_city,",
+				"          dim_customer_tier,",
+				"          dim_hash_scd2,",
+				"          dim_effective_start_date,",
+				"          dim_effective_end_date,",
+				"          dim_is_current,",
+				"          dim_action",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selInsertClean",
+				"fltCurrent select(mapColumn(",
+				"          dim_customer_sk = customer_sk,",
+				"          dim_customer_id = customer_id,",
+				"          dim_customer_name = customer_name,",
+				"          dim_email = email,",
+				"          dim_city = city,",
+				"          dim_customer_tier = customer_tier,",
+				"          dim_hash_scd2 = hash_scd2,",
+				"          dim_effective_start_date = effective_start_date,",
+				"          dim_effective_end_date = effective_end_date,",
+				"          dim_is_current = is_current",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selDimRename",
+				"unionNew derive(effective_start_date = currentDate(),",
+				"          effective_end_date = toDate('9999-12-31'),",
+				"          is_current = 'Y') ~> drvVersion",
+				"drvVersion select(mapColumn(",
+				"          customer_id,",
+				"          customer_name,",
+				"          email,",
+				"          city,",
+				"          customer_tier,",
+				"          updated_at,",
+				"          hash_scd2,",
+				"          effective_start_date,",
+				"          effective_end_date,",
+				"          is_current",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selClean",
+				"selClean alterRow(insertIf(true())) ~> alterInsert",
+				"splitAction@streamSCD2 select(mapColumn(",
+				"          customer_sk = dim_customer_sk",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selExpire",
+				"selExpire derive(effective_end_date = addDays(currentDate(), -1),",
+				"          is_current = 'N') ~> drvExpire",
+				"drvExpire alterRow(updateIf(true())) ~> alterExpire",
+				"alterInsert sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          customer_sk as integer,",
+				"          customer_id as integer,",
+				"          customer_name as string,",
+				"          email as string,",
+				"          city as string,",
+				"          customer_tier as string,",
+				"          hash_scd2 as string,",
+				"          effective_start_date as date,",
+				"          effective_end_date as date,",
+				"          is_current as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 2,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          customer_id,",
+				"          customer_name,",
+				"          email,",
+				"          city,",
+				"          customer_tier,",
+				"          hash_scd2,",
+				"          effective_start_date,",
+				"          effective_end_date,",
+				"          is_current",
+				"     )) ~> sinkInsert",
+				"alterExpire sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          customer_sk as integer,",
+				"          customer_id as integer,",
+				"          customer_name as string,",
+				"          email as string,",
+				"          city as string,",
+				"          customer_tier as string,",
+				"          hash_scd2 as string,",
+				"          effective_start_date as date,",
+				"          effective_end_date as date,",
+				"          is_current as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:[('customer_sk')],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          customer_sk,",
+				"          effective_end_date,",
+				"          is_current",
+				"     )) ~> sinkExpire"
+			]
+		}
+	}
+}

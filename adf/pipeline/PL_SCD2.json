@@ -1,0 +1,108 @@
+{
+	"name": "PL_SCD2",
+	"properties": {
+		"activities": [
+			{
+				"name": "LKP_wm",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT last_run_ts AS wm FROM etl_control WHERE job_name='scd2_customer'",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_src_customer2",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "DF_SCD2",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "LKP_wm",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_SCD2",
+						"type": "DataFlowReference",
+						"parameters": {
+							"p_watermark": {
+								"value": "'@{formatDateTime(activity('LKP_wm').output.firstRow.wm, 'yyyy-MM-dd HH:mm:ss')}'",
+								"type": "Expression"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "UPD_wm",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "DF_SCD2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabaseDS",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "UPDATE etl_control SET last_run_ts = GETDATE() WHERE job_name='scd2_customer'"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-07-18T13:36:16Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

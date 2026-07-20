@@ -1,0 +1,272 @@
+{
+	"name": "DF_SCD3_CSV",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_csv_customers",
+						"type": "DatasetReference"
+					},
+					"name": "srcCsv"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_dim_customer3",
+						"type": "DatasetReference"
+					},
+					"name": "dimT3"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_dim_customer3",
+						"type": "DatasetReference"
+					},
+					"name": "sinkIns"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_dim_customer3",
+						"type": "DatasetReference"
+					},
+					"name": "sinkUpd",
+					"rejectedDataLinkedService": {
+						"referenceName": "LS_Blob",
+						"type": "LinkedServiceReference"
+					}
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_dim_customer3",
+						"type": "DatasetReference"
+					},
+					"name": "sinkT1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "castTypes"
+				},
+				{
+					"name": "winRank"
+				},
+				{
+					"name": "fltLatest"
+				},
+				{
+					"name": "selDimRename"
+				},
+				{
+					"name": "lkpDim"
+				},
+				{
+					"name": "drvAction"
+				},
+				{
+					"name": "splitAction"
+				},
+				{
+					"name": "drvInit"
+				},
+				{
+					"name": "selIns"
+				},
+				{
+					"name": "alterIns"
+				},
+				{
+					"name": "drvShift"
+				},
+				{
+					"name": "selShift"
+				},
+				{
+					"name": "alterUpd"
+				},
+				{
+					"name": "selT1"
+				},
+				{
+					"name": "derivedT1"
+				},
+				{
+					"name": "alterT1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          customer_id as string,",
+				"          customer_name as string,",
+				"          email as string,",
+				"          city as string,",
+				"          updated_at as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     moveFiles: ['incoming','processed'],",
+				"     rowUrlColumn: 'source_file',",
+				"     wildcardPaths:['incoming/customers_*.csv']) ~> srcCsv",
+				"source(output(",
+				"          customer_sk as integer,",
+				"          customer_id as integer,",
+				"          customer_name as string,",
+				"          email as string,",
+				"          current_city as string,",
+				"          previous_city as string,",
+				"          city_change_date as date,",
+				"          source_file as string,",
+				"          dw_update_dt as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimT3",
+				"srcCsv cast(output(",
+				"          customer_id as integer,",
+				"          updated_at as timestamp 'yyyy-MM-dd HH:mm:ss'",
+				"     ),",
+				"     errors: true) ~> castTypes",
+				"castTypes window(over(customer_id),",
+				"     asc(updated_at, true),",
+				"     rn = rowNumber()) ~> winRank",
+				"winRank filter(rn == 1) ~> fltLatest",
+				"dimT3 select(mapColumn(",
+				"          dim_customer_id = customer_id,",
+				"          dim_email = email,",
+				"          dim_current_city = current_city,",
+				"          dim_previous_city = previous_city",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selDimRename",
+				"fltLatest, selDimRename lookup(customer_id == dim_customer_id,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lkpDim",
+				"lkpDim derive(action = iif(isNull(dim_customer_id), 'INSERT', iif(dim_current_city != city, 'SHIFT', iif(dim_email != email, 'T1', 'NOCHANGE')))) ~> drvAction",
+				"drvAction split(action == 'INSERT',",
+				"     action == 'SHIFT',",
+				"     action == 'T1',",
+				"     disjoint: false) ~> splitAction@(streamInsert, streamShift, streamT1, streamNoChange)",
+				"splitAction@streamInsert derive(current_city = city,",
+				"          previous_city = toString(null()),",
+				"          dw_update_dt = currentTimestamp()) ~> drvInit",
+				"drvInit select(mapColumn(",
+				"          customer_id,",
+				"          customer_name,",
+				"          email,",
+				"          source_file,",
+				"          action,",
+				"          current_city,",
+				"          previous_city,",
+				"          dw_update_dt",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selIns",
+				"selIns alterRow(insertIf(true())) ~> alterIns",
+				"splitAction@streamShift derive(previous_city = dim_current_city,",
+				"          current_city = city,",
+				"          city_change_date = currentDate(),",
+				"          dw_update_dt = currentTimestamp()) ~> drvShift",
+				"drvShift select(mapColumn(",
+				"          customer_id,",
+				"          email,",
+				"          dw_update_dt",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selShift",
+				"selShift alterRow(updateIf(true())) ~> alterUpd",
+				"splitAction@streamT1 select(mapColumn(",
+				"          customer_id,",
+				"          email",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selT1",
+				"selT1 derive(dw_update_dt = currentTimestamp()) ~> derivedT1",
+				"derivedT1 alterRow(updateIf(true())) ~> alterT1",
+				"alterIns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          customer_sk as integer,",
+				"          customer_id as integer,",
+				"          customer_name as string,",
+				"          email as string,",
+				"          current_city as string,",
+				"          previous_city as string,",
+				"          city_change_date as date,",
+				"          source_file as string,",
+				"          dw_update_dt as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          customer_id,",
+				"          customer_name,",
+				"          email,",
+				"          current_city,",
+				"          previous_city,",
+				"          source_file,",
+				"          dw_update_dt",
+				"     )) ~> sinkIns",
+				"alterUpd sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          customer_sk as integer,",
+				"          customer_id as integer,",
+				"          customer_name as string,",
+				"          email as string,",
+				"          current_city as string,",
+				"          previous_city as string,",
+				"          city_change_date as date,",
+				"          source_file as string,",
+				"          dw_update_dt as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['customer_id'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sinkUpd",
+				"alterT1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          customer_sk as integer,",
+				"          customer_id as integer,",
+				"          customer_name as string,",
+				"          email as string,",
+				"          current_city as string,",
+				"          previous_city as string,",
+				"          city_change_date as date,",
+				"          source_file as string,",
+				"          dw_update_dt as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['customer_id'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          customer_id,",
+				"          email,",
+				"          dw_update_dt",
+				"     )) ~> sinkT1"
+			]
+		}
+	}
+}

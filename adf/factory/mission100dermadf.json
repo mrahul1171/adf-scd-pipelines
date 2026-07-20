@@ -1,0 +1,15 @@
+{
+	"name": "mission100dermadf",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "westus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "61695356-1a2a-4cba-865e-b8bee3c4560e",
+		"tenantId": "3c558ead-020a-4a9b-95af-2ea43f829180"
+	}
+}

@@ -1,0 +1,74 @@
+{
+	"name": "DF_SCD1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_src_customer",
+						"type": "DatasetReference"
+					},
+					"name": "srcCustomer"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_dim_customer",
+						"type": "DatasetReference"
+					},
+					"name": "sinkDim"
+				}
+			],
+			"transformations": [
+				{
+					"name": "drvAudit"
+				},
+				{
+					"name": "alterUpsert"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          customer_id as integer,",
+				"          customer_name as string,",
+				"          email as string,",
+				"          city as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> srcCustomer",
+				"srcCustomer derive({load_date } = currentTimestamp()) ~> drvAudit",
+				"drvAudit alterRow(upsertIf(true())) ~> alterUpsert",
+				"alterUpsert sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          customer_sk as integer,",
+				"          customer_id as integer,",
+				"          customer_name as string,",
+				"          email as string,",
+				"          city as string,",
+				"          load_date as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:false,",
+				"     upsertable:true,",
+				"     keys:['customer_id'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          customer_id,",
+				"          customer_name,",
+				"          email,",
+				"          city,",
+				"          load_date = {load_date }",
+				"     )) ~> sinkDim"
+			]
+		}
+	}
+}

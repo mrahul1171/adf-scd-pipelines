@@ -1,0 +1,3 @@
+customer_id,customer_name,email,city,customer_tier,updated_at
+101,Ravi Kumar,ravi@gmail.com,Bangalore,Silver,2026-07-18 10:00:00
+104,Priya Nair,priya@gmail.com,Chennai,Bronze,2026-07-18 10:10:00

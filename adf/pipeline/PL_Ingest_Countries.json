@@ -5,7 +5,14 @@
 			{
 				"name": "Copy API JSON",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Get_ApiKey",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -20,6 +27,12 @@
 						"httpRequestTimeout": "00:01:40",
 						"requestInterval": "00.00:00:00.010",
 						"requestMethod": "GET",
+						"additionalHeaders": {
+							"Authorization": {
+								"value": "@concat('Bearer ', activity('Get_ApiKey').output.value)",
+								"type": "Expression"
+							}
+						},
 						"paginationRules": {
 							"supportRFC5988": "true"
 						}
@@ -60,7 +73,8 @@
 									"path": "['names']['native']['eng']['official']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['names_native_eng_official"
+									"name": "data_objects'][0]['names_native_eng_official",
+									"type": "String"
 								}
 							},
 							{
@@ -464,8 +478,7 @@
 									"path": "['names']['translations']['spa']['official']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['names_translations_spa_official",
-									"type": "String"
+									"name": "data_objects'][0]['names_translations_spa_official"
 								}
 							},
 							{
@@ -860,8 +873,7 @@
 									"path": "['coordinates']['lat']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['coordinates_lat",
-									"type": "String"
+									"name": "data_objects'][0]['coordinates_lat"
 								}
 							},
 							{
@@ -869,8 +881,7 @@
 									"path": "['coordinates']['lng']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['coordinates_lng",
-									"type": "String"
+									"name": "data_objects'][0]['coordinates_lng"
 								}
 							},
 							{
@@ -878,8 +889,7 @@
 									"path": "['date']['academic_year_start']['day']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['date_academic_year_start_day",
-									"type": "String"
+									"name": "data_objects'][0]['date_academic_year_start_day"
 								}
 							},
 							{
@@ -887,8 +897,7 @@
 									"path": "['date']['academic_year_start']['month']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['date_academic_year_start_month",
-									"type": "String"
+									"name": "data_objects'][0]['date_academic_year_start_month"
 								}
 							},
 							{
@@ -896,8 +905,7 @@
 									"path": "['date']['fiscal_year_start']['corporate']['basis']"
 								},
 								"sink": {
-									"name": "basis",
-									"type": "String"
+									"name": "basis"
 								}
 							},
 							{
@@ -905,8 +913,7 @@
 									"path": "['date']['fiscal_year_start']['corporate']['day']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['date_fiscal_year_start_corporate_day",
-									"type": "String"
+									"name": "data_objects'][0]['date_fiscal_year_start_corporate_day"
 								}
 							},
 							{
@@ -914,8 +921,7 @@
 									"path": "['date']['fiscal_year_start']['corporate']['month']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['date_fiscal_year_start_corporate_month",
-									"type": "String"
+									"name": "data_objects'][0]['date_fiscal_year_start_corporate_month"
 								}
 							},
 							{
@@ -923,8 +929,7 @@
 									"path": "['date']['fiscal_year_start']['government']['day']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['date_fiscal_year_start_government_day",
-									"type": "String"
+									"name": "data_objects'][0]['date_fiscal_year_start_government_day"
 								}
 							},
 							{
@@ -932,8 +937,7 @@
 									"path": "['date']['fiscal_year_start']['government']['month']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['date_fiscal_year_start_government_month",
-									"type": "String"
+									"name": "data_objects'][0]['date_fiscal_year_start_government_month"
 								}
 							},
 							{
@@ -941,8 +945,7 @@
 									"path": "['date']['fiscal_year_start']['personal']['day']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['date_fiscal_year_start_personal_day",
-									"type": "String"
+									"name": "data_objects'][0]['date_fiscal_year_start_personal_day"
 								}
 							},
 							{
@@ -950,8 +953,7 @@
 									"path": "['date']['fiscal_year_start']['personal']['month']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['date_fiscal_year_start_personal_month",
-									"type": "String"
+									"name": "data_objects'][0]['date_fiscal_year_start_personal_month"
 								}
 							},
 							{
@@ -959,8 +961,7 @@
 									"path": "['date']['start_of_week']"
 								},
 								"sink": {
-									"name": "start_of_week",
-									"type": "String"
+									"name": "start_of_week"
 								}
 							},
 							{
@@ -968,8 +969,7 @@
 									"path": "['demonyms']['eng']['f']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['demonyms_eng_f",
-									"type": "String"
+									"name": "data_objects'][0]['demonyms_eng_f"
 								}
 							},
 							{
@@ -977,8 +977,7 @@
 									"path": "['demonyms']['eng']['m']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['demonyms_eng_m",
-									"type": "String"
+									"name": "data_objects'][0]['demonyms_eng_m"
 								}
 							},
 							{
@@ -986,8 +985,7 @@
 									"path": "['demonyms']['fra']['f']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['demonyms_fra_f",
-									"type": "String"
+									"name": "data_objects'][0]['demonyms_fra_f"
 								}
 							},
 							{
@@ -995,8 +993,7 @@
 									"path": "['demonyms']['fra']['m']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['demonyms_fra_m",
-									"type": "String"
+									"name": "data_objects'][0]['demonyms_fra_m"
 								}
 							},
 							{
@@ -1004,8 +1001,7 @@
 									"path": "['economy']['gini_coefficient']['2018']"
 								},
 								"sink": {
-									"name": "2018",
-									"type": "String"
+									"name": "2018"
 								}
 							},
 							{
@@ -1013,8 +1009,7 @@
 									"path": "['economy']['gini_coefficient']['2019']"
 								},
 								"sink": {
-									"name": "2019",
-									"type": "String"
+									"name": "2019"
 								}
 							},
 							{
@@ -1022,8 +1017,7 @@
 									"path": "['economy']['gini_coefficient']['2020']"
 								},
 								"sink": {
-									"name": "2020",
-									"type": "String"
+									"name": "2020"
 								}
 							},
 							{
@@ -1031,8 +1025,7 @@
 									"path": "['economy']['gini_coefficient']['2021']"
 								},
 								"sink": {
-									"name": "2021",
-									"type": "String"
+									"name": "2021"
 								}
 							},
 							{
@@ -1288,8 +1281,7 @@
 									"path": "['_meta']['lastUpdatedTimestamp']"
 								},
 								"sink": {
-									"name": "lastUpdatedTimestamp",
-									"type": "String"
+									"name": "lastUpdatedTimestamp"
 								}
 							},
 							{
@@ -1297,8 +1289,7 @@
 									"path": "$['data']['_demo']['message']"
 								},
 								"sink": {
-									"name": "message",
-									"type": "String"
+									"name": "message"
 								}
 							},
 							{
@@ -1314,8 +1305,7 @@
 									"path": "$['data']['meta']['total']"
 								},
 								"sink": {
-									"name": "total",
-									"type": "String"
+									"name": "total"
 								}
 							},
 							{
@@ -1323,8 +1313,7 @@
 									"path": "$['data']['meta']['request_id']"
 								},
 								"sink": {
-									"name": "request_id",
-									"type": "String"
+									"name": "request_id"
 								}
 							},
 							{
@@ -1332,8 +1321,7 @@
 									"path": "['names']['alternates'][0]"
 								},
 								"sink": {
-									"name": "data_objects'][0]['names_alternates'][",
-									"type": "String"
+									"name": "data_objects'][0]['names_alternates']["
 								}
 							},
 							{
@@ -1341,8 +1329,7 @@
 									"path": "['capitals'][0]['attributes']['administrative']"
 								},
 								"sink": {
-									"name": "administrative",
-									"type": "String"
+									"name": "administrative"
 								}
 							},
 							{
@@ -1350,8 +1337,7 @@
 									"path": "['capitals'][0]['attributes']['constitutional']"
 								},
 								"sink": {
-									"name": "constitutional",
-									"type": "String"
+									"name": "constitutional"
 								}
 							},
 							{
@@ -1367,8 +1353,7 @@
 									"path": "['capitals'][0]['attributes']['judicial']"
 								},
 								"sink": {
-									"name": "judicial",
-									"type": "String"
+									"name": "judicial"
 								}
 							},
 							{
@@ -1376,8 +1361,7 @@
 									"path": "['capitals'][0]['attributes']['legislative']"
 								},
 								"sink": {
-									"name": "legislative",
-									"type": "String"
+									"name": "legislative"
 								}
 							},
 							{
@@ -1385,8 +1369,7 @@
 									"path": "['capitals'][0]['attributes']['primary']"
 								},
 								"sink": {
-									"name": "primary",
-									"type": "String"
+									"name": "primary"
 								}
 							},
 							{
@@ -1394,8 +1377,7 @@
 									"path": "['capitals'][0]['coordinates']['lat']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['capitals'][0]['coordinates_lat",
-									"type": "String"
+									"name": "data_objects'][0]['capitals'][0]['coordinates_lat"
 								}
 							},
 							{
@@ -1403,8 +1385,7 @@
 									"path": "['capitals'][0]['coordinates']['lng']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['capitals'][0]['coordinates_lng",
-									"type": "String"
+									"name": "data_objects'][0]['capitals'][0]['coordinates_lng"
 								}
 							},
 							{
@@ -1412,8 +1393,7 @@
 									"path": "['capitals'][0]['name']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['capitals'][0]['name",
-									"type": "String"
+									"name": "data_objects'][0]['capitals'][0]['name"
 								}
 							},
 							{
@@ -1421,8 +1401,7 @@
 									"path": "['flag']['colors']['palette'][0]['hex']"
 								},
 								"sink": {
-									"name": "hex",
-									"type": "String"
+									"name": "hex"
 								}
 							},
 							{
@@ -1430,8 +1409,7 @@
 									"path": "['flag']['colors']['palette'][0]['proportion']"
 								},
 								"sink": {
-									"name": "proportion",
-									"type": "String"
+									"name": "proportion"
 								}
 							},
 							{
@@ -1439,8 +1417,7 @@
 									"path": "['assets'][0]"
 								},
 								"sink": {
-									"name": "data_objects'][0]['assets'][",
-									"type": "String"
+									"name": "data_objects'][0]['assets']["
 								}
 							},
 							{
@@ -1448,8 +1425,7 @@
 									"path": "['borders'][0]"
 								},
 								"sink": {
-									"name": "data_objects'][0]['borders'][",
-									"type": "String"
+									"name": "data_objects'][0]['borders']["
 								}
 							},
 							{
@@ -1457,8 +1433,7 @@
 									"path": "['calling_codes'][0]"
 								},
 								"sink": {
-									"name": "data_objects'][0]['calling_codes'][",
-									"type": "String"
+									"name": "data_objects'][0]['calling_codes']["
 								}
 							},
 							{
@@ -1466,8 +1441,7 @@
 									"path": "['cars']['signs'][0]"
 								},
 								"sink": {
-									"name": "data_objects'][0]['cars_signs'][",
-									"type": "String"
+									"name": "data_objects'][0]['cars_signs']["
 								}
 							},
 							{
@@ -1475,8 +1449,7 @@
 									"path": "['continents'][0]"
 								},
 								"sink": {
-									"name": "data_objects'][0]['continents'][",
-									"type": "String"
+									"name": "data_objects'][0]['continents']["
 								}
 							},
 							{
@@ -1484,8 +1457,7 @@
 									"path": "['currencies'][0]['code']"
 								},
 								"sink": {
-									"name": "code",
-									"type": "String"
+									"name": "code"
 								}
 							},
 							{
@@ -1493,8 +1465,7 @@
 									"path": "['currencies'][0]['name']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['currencies'][0]['name",
-									"type": "String"
+									"name": "data_objects'][0]['currencies'][0]['name"
 								}
 							},
 							{
@@ -1502,8 +1473,7 @@
 									"path": "['currencies'][0]['symbol']"
 								},
 								"sink": {
-									"name": "symbol",
-									"type": "String"
+									"name": "symbol"
 								}
 							},
 							{
@@ -1511,8 +1481,7 @@
 									"path": "['languages'][0]['bcp47']"
 								},
 								"sink": {
-									"name": "bcp47",
-									"type": "String"
+									"name": "bcp47"
 								}
 							},
 							{
@@ -1520,8 +1489,7 @@
 									"path": "['languages'][0]['iso639_1']"
 								},
 								"sink": {
-									"name": "iso639_1",
-									"type": "String"
+									"name": "iso639_1"
 								}
 							},
 							{
@@ -1529,8 +1497,7 @@
 									"path": "['languages'][0]['iso639_2b']"
 								},
 								"sink": {
-									"name": "iso639_2b",
-									"type": "String"
+									"name": "iso639_2b"
 								}
 							},
 							{
@@ -1538,8 +1505,7 @@
 									"path": "['languages'][0]['iso639_2t']"
 								},
 								"sink": {
-									"name": "iso639_2t",
-									"type": "String"
+									"name": "iso639_2t"
 								}
 							},
 							{
@@ -1547,8 +1513,7 @@
 									"path": "['languages'][0]['iso639_3']"
 								},
 								"sink": {
-									"name": "iso639_3",
-									"type": "String"
+									"name": "iso639_3"
 								}
 							},
 							{
@@ -1556,8 +1521,7 @@
 									"path": "['languages'][0]['name']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['languages'][0]['name",
-									"type": "String"
+									"name": "data_objects'][0]['languages'][0]['name"
 								}
 							},
 							{
@@ -1565,8 +1529,7 @@
 									"path": "['languages'][0]['native_name']"
 								},
 								"sink": {
-									"name": "native_name",
-									"type": "String"
+									"name": "native_name"
 								}
 							},
 							{
@@ -1574,8 +1537,7 @@
 									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['content_hash']"
 								},
 								"sink": {
-									"name": "content_hash",
-									"type": "String"
+									"name": "content_hash"
 								}
 							},
 							{
@@ -1583,8 +1545,7 @@
 									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['content_type']"
 								},
 								"sink": {
-									"name": "content_type",
-									"type": "String"
+									"name": "content_type"
 								}
 							},
 							{
@@ -1592,8 +1553,7 @@
 									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['filesize']"
 								},
 								"sink": {
-									"name": "filesize",
-									"type": "String"
+									"name": "filesize"
 								}
 							},
 							{
@@ -1601,8 +1561,7 @@
 									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['height']"
 								},
 								"sink": {
-									"name": "height",
-									"type": "String"
+									"name": "height"
 								}
 							},
 							{
@@ -1610,8 +1569,7 @@
 									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['max_edge']"
 								},
 								"sink": {
-									"name": "max_edge",
-									"type": "String"
+									"name": "max_edge"
 								}
 							},
 							{
@@ -1619,8 +1577,7 @@
 									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['url']"
 								},
 								"sink": {
-									"name": "url",
-									"type": "String"
+									"name": "url"
 								}
 							},
 							{
@@ -1628,8 +1585,7 @@
 									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['width']"
 								},
 								"sink": {
-									"name": "width",
-									"type": "String"
+									"name": "width"
 								}
 							},
 							{
@@ -1637,8 +1593,7 @@
 									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['source']"
 								},
 								"sink": {
-									"name": "source",
-									"type": "String"
+									"name": "source"
 								}
 							},
 							{
@@ -1646,8 +1601,7 @@
 									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['type']"
 								},
 								"sink": {
-									"name": "type",
-									"type": "String"
+									"name": "type"
 								}
 							},
 							{
@@ -1655,8 +1609,7 @@
 									"path": "['leaders'][0]['attributes']['administers_executive']"
 								},
 								"sink": {
-									"name": "administers_executive",
-									"type": "String"
+									"name": "administers_executive"
 								}
 							},
 							{
@@ -1664,8 +1617,7 @@
 									"path": "['leaders'][0]['attributes']['de_facto_executive']"
 								},
 								"sink": {
-									"name": "de_facto_executive",
-									"type": "String"
+									"name": "de_facto_executive"
 								}
 							},
 							{
@@ -1673,8 +1625,7 @@
 									"path": "['leaders'][0]['attributes']['head_of_government']"
 								},
 								"sink": {
-									"name": "head_of_government",
-									"type": "String"
+									"name": "head_of_government"
 								}
 							},
 							{
@@ -1682,8 +1633,7 @@
 									"path": "['leaders'][0]['attributes']['head_of_state']"
 								},
 								"sink": {
-									"name": "head_of_state",
-									"type": "String"
+									"name": "head_of_state"
 								}
 							},
 							{
@@ -1699,8 +1649,7 @@
 									"path": "['leaders'][0]['attributes']['pending_office']"
 								},
 								"sink": {
-									"name": "pending_office",
-									"type": "String"
+									"name": "pending_office"
 								}
 							},
 							{
@@ -1708,8 +1657,7 @@
 									"path": "['leaders'][0]['attributes']['provisional']"
 								},
 								"sink": {
-									"name": "provisional",
-									"type": "String"
+									"name": "provisional"
 								}
 							},
 							{
@@ -1725,8 +1673,7 @@
 									"path": "['leaders'][0]['name']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['leaders'][0]['name",
-									"type": "String"
+									"name": "data_objects'][0]['leaders'][0]['name"
 								}
 							},
 							{
@@ -1734,8 +1681,7 @@
 									"path": "['leaders'][0]['title']"
 								},
 								"sink": {
-									"name": "title",
-									"type": "String"
+									"name": "title"
 								}
 							},
 							{
@@ -1743,8 +1689,7 @@
 									"path": "['leaders'][0]['uuid']"
 								},
 								"sink": {
-									"name": "data_objects'][0]['leaders'][0]['uuid",
-									"type": "String"
+									"name": "data_objects'][0]['leaders'][0]['uuid"
 								}
 							},
 							{
@@ -1760,8 +1705,7 @@
 									"path": "['tlds'][0]"
 								},
 								"sink": {
-									"name": "data_objects'][0]['tlds'][",
-									"type": "String"
+									"name": "data_objects'][0]['tlds']["
 								}
 							}
 						],
@@ -1774,7 +1718,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"relativeUrl": {
-								"value": "@concat(\n    '?region=', pipeline().parameters.region,\n    '&response_fields=', pipeline().parameters.responseFields,\n    '&limit=', string(pipeline().parameters.pageLimit)\n  )",
+								"value": "@concat('?region=', pipeline().parameters.region,\n        '&limit=', string(pipeline().parameters.pageLimit),\n        '&api-key=', 'https://restapikeyvaultade.vault.azure.net/secrets/restcountries-api-key/55ec6e342d60445795700190a24b74fb')",
 								"type": "Expression"
 							}
 						}
@@ -1792,6 +1736,27 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "Get_ApiKey",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://restapikeyvaultade.vault.azure.net/secrets/restcountries-api-key/55ec6e342d60445795700190a24b74fb?api-version=7.0",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
 			}
 		],
 		"parameters": {

@@ -1,0 +1,20 @@
+{
+	"name": "DS_REST_Countries",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "RestService1",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"relativeUrl": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": "@dataset().relativeUrl"
+		},
+		"schema": []
+	}
+}

@@ -1,0 +1,1813 @@
+{
+	"name": "PL_Ingest_Countries",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy API JSON",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "['names']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['native']['eng']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_native_eng_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['native']['eng']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_native_eng_official"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['native']['fra']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_native_fra_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['native']['fra']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_native_fra_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['ara']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_ara_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['ara']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_ara_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['bre']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_bre_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['bre']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_bre_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['ces']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_ces_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['ces']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_ces_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['cym']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_cym_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['cym']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_cym_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['deu']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_deu_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['deu']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_deu_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['est']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_est_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['est']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_est_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['fas']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_fas_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['fas']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_fas_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['fin']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_fin_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['fin']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_fin_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['fra']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_fra_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['fra']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_fra_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['hrv']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_hrv_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['hrv']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_hrv_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['hun']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_hun_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['hun']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_hun_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['ind']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_ind_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['ind']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_ind_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['ita']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_ita_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['ita']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_ita_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['jpn']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_jpn_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['jpn']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_jpn_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['kor']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_kor_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['kor']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_kor_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['nld']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_nld_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['nld']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_nld_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['pol']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_pol_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['pol']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_pol_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['por']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_por_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['por']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_por_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['rus']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_rus_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['rus']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_rus_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['slk']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_slk_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['slk']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_slk_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['spa']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_spa_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['spa']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_spa_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['srp']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_srp_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['srp']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_srp_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['swe']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_swe_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['swe']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_swe_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['tur']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_tur_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['tur']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_tur_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['urd']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_urd_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['urd']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_urd_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['zho']['common']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_zho_common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['translations']['zho']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_translations_zho_official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['codes']['alpha_2']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['codes_alpha_2",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['codes']['alpha_3']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['codes_alpha_3",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['codes']['ccn3']"
+								},
+								"sink": {
+									"name": "ccn3",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['codes']['cioc']"
+								},
+								"sink": {
+									"name": "cioc",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['codes']['fifa']"
+								},
+								"sink": {
+									"name": "fifa",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['codes']['fips']"
+								},
+								"sink": {
+									"name": "fips",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['codes']['gec']"
+								},
+								"sink": {
+									"name": "gec",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['colors']['dominant']"
+								},
+								"sink": {
+									"name": "dominant",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['colors']['prominent']"
+								},
+								"sink": {
+									"name": "prominent",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['colors']['swatches']['dark_muted']"
+								},
+								"sink": {
+									"name": "dark_muted",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['colors']['swatches']['dark_vibrant']"
+								},
+								"sink": {
+									"name": "dark_vibrant",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['colors']['swatches']['light_muted']"
+								},
+								"sink": {
+									"name": "light_muted",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['colors']['swatches']['light_vibrant']"
+								},
+								"sink": {
+									"name": "light_vibrant",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['colors']['swatches']['muted']"
+								},
+								"sink": {
+									"name": "muted",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['colors']['swatches']['vibrant']"
+								},
+								"sink": {
+									"name": "vibrant",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['description']"
+								},
+								"sink": {
+									"name": "description",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['emoji']"
+								},
+								"sink": {
+									"name": "emoji",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['html_entity']"
+								},
+								"sink": {
+									"name": "html_entity",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['unicode']"
+								},
+								"sink": {
+									"name": "unicode",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['url_png']"
+								},
+								"sink": {
+									"name": "url_png",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['url_svg']"
+								},
+								"sink": {
+									"name": "url_svg",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['region']"
+								},
+								"sink": {
+									"name": "region",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['subregion']"
+								},
+								"sink": {
+									"name": "subregion",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['area']['kilometers']"
+								},
+								"sink": {
+									"name": "kilometers",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['area']['miles']"
+								},
+								"sink": {
+									"name": "miles",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['cars']['driving_side']"
+								},
+								"sink": {
+									"name": "driving_side",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['classification']['dependency']"
+								},
+								"sink": {
+									"name": "dependency",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['classification']['dependency_type']"
+								},
+								"sink": {
+									"name": "dependency_type",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['classification']['disputed']"
+								},
+								"sink": {
+									"name": "disputed",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['classification']['iso_status']"
+								},
+								"sink": {
+									"name": "iso_status",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['classification']['sovereign']"
+								},
+								"sink": {
+									"name": "sovereign",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['classification']['un_member']"
+								},
+								"sink": {
+									"name": "un_member",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['classification']['un_observer']"
+								},
+								"sink": {
+									"name": "un_observer",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['coordinates']['lat']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['coordinates_lat",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['coordinates']['lng']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['coordinates_lng",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['date']['academic_year_start']['day']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['date_academic_year_start_day",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['date']['academic_year_start']['month']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['date_academic_year_start_month",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['date']['fiscal_year_start']['corporate']['basis']"
+								},
+								"sink": {
+									"name": "basis",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['date']['fiscal_year_start']['corporate']['day']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['date_fiscal_year_start_corporate_day",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['date']['fiscal_year_start']['corporate']['month']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['date_fiscal_year_start_corporate_month",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['date']['fiscal_year_start']['government']['day']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['date_fiscal_year_start_government_day",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['date']['fiscal_year_start']['government']['month']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['date_fiscal_year_start_government_month",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['date']['fiscal_year_start']['personal']['day']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['date_fiscal_year_start_personal_day",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['date']['fiscal_year_start']['personal']['month']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['date_fiscal_year_start_personal_month",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['date']['start_of_week']"
+								},
+								"sink": {
+									"name": "start_of_week",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['demonyms']['eng']['f']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['demonyms_eng_f",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['demonyms']['eng']['m']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['demonyms_eng_m",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['demonyms']['fra']['f']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['demonyms_fra_f",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['demonyms']['fra']['m']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['demonyms_fra_m",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['economy']['gini_coefficient']['2018']"
+								},
+								"sink": {
+									"name": "2018",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['economy']['gini_coefficient']['2019']"
+								},
+								"sink": {
+									"name": "2019",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['economy']['gini_coefficient']['2020']"
+								},
+								"sink": {
+									"name": "2020",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['economy']['gini_coefficient']['2021']"
+								},
+								"sink": {
+									"name": "2021",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['economy']['gini_coefficient']['2022']"
+								},
+								"sink": {
+									"name": "2022"
+								}
+							},
+							{
+								"source": {
+									"path": "['government_type']"
+								},
+								"sink": {
+									"name": "government_type"
+								}
+							},
+							{
+								"source": {
+									"path": "['landlocked']"
+								},
+								"sink": {
+									"name": "landlocked"
+								}
+							},
+							{
+								"source": {
+									"path": "['links']['google_maps']"
+								},
+								"sink": {
+									"name": "google_maps"
+								}
+							},
+							{
+								"source": {
+									"path": "['links']['official']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['links_official"
+								}
+							},
+							{
+								"source": {
+									"path": "['links']['open_street_maps']"
+								},
+								"sink": {
+									"name": "open_street_maps"
+								}
+							},
+							{
+								"source": {
+									"path": "['links']['wikipedia']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['links_wikipedia"
+								}
+							},
+							{
+								"source": {
+									"path": "['memberships']['african_union']"
+								},
+								"sink": {
+									"name": "african_union"
+								}
+							},
+							{
+								"source": {
+									"path": "['memberships']['arab_league']"
+								},
+								"sink": {
+									"name": "arab_league"
+								}
+							},
+							{
+								"source": {
+									"path": "['memberships']['asean']"
+								},
+								"sink": {
+									"name": "asean"
+								}
+							},
+							{
+								"source": {
+									"path": "['memberships']['brics']"
+								},
+								"sink": {
+									"name": "brics"
+								}
+							},
+							{
+								"source": {
+									"path": "['memberships']['commonwealth']"
+								},
+								"sink": {
+									"name": "commonwealth"
+								}
+							},
+							{
+								"source": {
+									"path": "['memberships']['eu']"
+								},
+								"sink": {
+									"name": "eu"
+								}
+							},
+							{
+								"source": {
+									"path": "['memberships']['eurozone']"
+								},
+								"sink": {
+									"name": "eurozone"
+								}
+							},
+							{
+								"source": {
+									"path": "['memberships']['g20']"
+								},
+								"sink": {
+									"name": "g20"
+								}
+							},
+							{
+								"source": {
+									"path": "['memberships']['g7']"
+								},
+								"sink": {
+									"name": "g7"
+								}
+							},
+							{
+								"source": {
+									"path": "['memberships']['nato']"
+								},
+								"sink": {
+									"name": "nato"
+								}
+							},
+							{
+								"source": {
+									"path": "['memberships']['oecd']"
+								},
+								"sink": {
+									"name": "oecd"
+								}
+							},
+							{
+								"source": {
+									"path": "['memberships']['opec']"
+								},
+								"sink": {
+									"name": "opec"
+								}
+							},
+							{
+								"source": {
+									"path": "['memberships']['schengen']"
+								},
+								"sink": {
+									"name": "schengen"
+								}
+							},
+							{
+								"source": {
+									"path": "['memberships']['un']"
+								},
+								"sink": {
+									"name": "un"
+								}
+							},
+							{
+								"source": {
+									"path": "['number_format']['decimal_separator']"
+								},
+								"sink": {
+									"name": "decimal_separator"
+								}
+							},
+							{
+								"source": {
+									"path": "['number_format']['thousands_separator']"
+								},
+								"sink": {
+									"name": "thousands_separator"
+								}
+							},
+							{
+								"source": {
+									"path": "['parent']['alpha_2']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['parent_alpha_2"
+								}
+							},
+							{
+								"source": {
+									"path": "['parent']['alpha_3']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['parent_alpha_3"
+								}
+							},
+							{
+								"source": {
+									"path": "['population']"
+								},
+								"sink": {
+									"name": "population"
+								}
+							},
+							{
+								"source": {
+									"path": "['postal_code']['format']"
+								},
+								"sink": {
+									"name": "format"
+								}
+							},
+							{
+								"source": {
+									"path": "['postal_code']['regex']"
+								},
+								"sink": {
+									"name": "regex"
+								}
+							},
+							{
+								"source": {
+									"path": "['units']['measurement_system']"
+								},
+								"sink": {
+									"name": "measurement_system"
+								}
+							},
+							{
+								"source": {
+									"path": "['units']['temperature_scale']"
+								},
+								"sink": {
+									"name": "temperature_scale"
+								}
+							},
+							{
+								"source": {
+									"path": "['uuid']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['uuid"
+								}
+							},
+							{
+								"source": {
+									"path": "['_meta']['lastUpdatedTimestamp']"
+								},
+								"sink": {
+									"name": "lastUpdatedTimestamp",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data']['_demo']['message']"
+								},
+								"sink": {
+									"name": "message",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data']['_demo']['signup_url']"
+								},
+								"sink": {
+									"name": "signup_url"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data']['meta']['total']"
+								},
+								"sink": {
+									"name": "total",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data']['meta']['request_id']"
+								},
+								"sink": {
+									"name": "request_id",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['names']['alternates'][0]"
+								},
+								"sink": {
+									"name": "data_objects'][0]['names_alternates'][",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['capitals'][0]['attributes']['administrative']"
+								},
+								"sink": {
+									"name": "administrative",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['capitals'][0]['attributes']['constitutional']"
+								},
+								"sink": {
+									"name": "constitutional",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['capitals'][0]['attributes']['executive']"
+								},
+								"sink": {
+									"name": "executive"
+								}
+							},
+							{
+								"source": {
+									"path": "['capitals'][0]['attributes']['judicial']"
+								},
+								"sink": {
+									"name": "judicial",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['capitals'][0]['attributes']['legislative']"
+								},
+								"sink": {
+									"name": "legislative",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['capitals'][0]['attributes']['primary']"
+								},
+								"sink": {
+									"name": "primary",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['capitals'][0]['coordinates']['lat']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['capitals'][0]['coordinates_lat",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['capitals'][0]['coordinates']['lng']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['capitals'][0]['coordinates_lng",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['capitals'][0]['name']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['capitals'][0]['name",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['colors']['palette'][0]['hex']"
+								},
+								"sink": {
+									"name": "hex",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['flag']['colors']['palette'][0]['proportion']"
+								},
+								"sink": {
+									"name": "proportion",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['assets'][0]"
+								},
+								"sink": {
+									"name": "data_objects'][0]['assets'][",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['borders'][0]"
+								},
+								"sink": {
+									"name": "data_objects'][0]['borders'][",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['calling_codes'][0]"
+								},
+								"sink": {
+									"name": "data_objects'][0]['calling_codes'][",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['cars']['signs'][0]"
+								},
+								"sink": {
+									"name": "data_objects'][0]['cars_signs'][",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['continents'][0]"
+								},
+								"sink": {
+									"name": "data_objects'][0]['continents'][",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['currencies'][0]['code']"
+								},
+								"sink": {
+									"name": "code",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['currencies'][0]['name']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['currencies'][0]['name",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['currencies'][0]['symbol']"
+								},
+								"sink": {
+									"name": "symbol",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['languages'][0]['bcp47']"
+								},
+								"sink": {
+									"name": "bcp47",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['languages'][0]['iso639_1']"
+								},
+								"sink": {
+									"name": "iso639_1",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['languages'][0]['iso639_2b']"
+								},
+								"sink": {
+									"name": "iso639_2b",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['languages'][0]['iso639_2t']"
+								},
+								"sink": {
+									"name": "iso639_2t",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['languages'][0]['iso639_3']"
+								},
+								"sink": {
+									"name": "iso639_3",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['languages'][0]['name']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['languages'][0]['name",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['languages'][0]['native_name']"
+								},
+								"sink": {
+									"name": "native_name",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['content_hash']"
+								},
+								"sink": {
+									"name": "content_hash",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['content_type']"
+								},
+								"sink": {
+									"name": "content_type",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['filesize']"
+								},
+								"sink": {
+									"name": "filesize",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['height']"
+								},
+								"sink": {
+									"name": "height",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['max_edge']"
+								},
+								"sink": {
+									"name": "max_edge",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['url']"
+								},
+								"sink": {
+									"name": "url",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['width']"
+								},
+								"sink": {
+									"name": "width",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['source']"
+								},
+								"sink": {
+									"name": "source",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['assets']['wikipedia.article.open_graph_image']['type']"
+								},
+								"sink": {
+									"name": "type",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['attributes']['administers_executive']"
+								},
+								"sink": {
+									"name": "administers_executive",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['attributes']['de_facto_executive']"
+								},
+								"sink": {
+									"name": "de_facto_executive",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['attributes']['head_of_government']"
+								},
+								"sink": {
+									"name": "head_of_government",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['attributes']['head_of_state']"
+								},
+								"sink": {
+									"name": "head_of_state",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['attributes']['is_representative']"
+								},
+								"sink": {
+									"name": "is_representative"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['attributes']['pending_office']"
+								},
+								"sink": {
+									"name": "pending_office",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['attributes']['provisional']"
+								},
+								"sink": {
+									"name": "provisional",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['links']['wikipedia']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['leaders'][0]['links_wikipedia"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['name']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['leaders'][0]['name",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['title']"
+								},
+								"sink": {
+									"name": "title",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['leaders'][0]['uuid']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['leaders'][0]['uuid",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['timezones'][0]"
+								},
+								"sink": {
+									"name": "data_objects'][0]['timezones']["
+								}
+							},
+							{
+								"source": {
+									"path": "['tlds'][0]"
+								},
+								"sink": {
+									"name": "data_objects'][0]['tlds'][",
+									"type": "String"
+								}
+							}
+						],
+						"collectionReference": "$['data']['objects']"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_REST_Countries",
+						"type": "DatasetReference",
+						"parameters": {
+							"relativeUrl": {
+								"value": "@concat(\n    '?region=', pipeline().parameters.region,\n    '&response_fields=', pipeline().parameters.responseFields,\n    '&limit=', string(pipeline().parameters.pageLimit)\n  )",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_Parquet_Countries",
+						"type": "DatasetReference",
+						"parameters": {
+							"fileName": {
+								"value": "@concat('countries_', pipeline().parameters.region, '.parquet')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"region": {
+				"type": "string",
+				"defaultValue": "Europe"
+			},
+			"responseFields": {
+				"type": "string",
+				"defaultValue": "names,capital,region,currencies,languages,flags"
+			},
+			"pageLimit": {
+				"type": "int",
+				"defaultValue": 100
+			}
+		},
+		"annotations": []
+	}
+}

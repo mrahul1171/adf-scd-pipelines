@@ -5,17 +5,11 @@
 		"factoryName": {
 			"value": "mission100dermadf"
 		},
-		"AzureDataLakeStorageLSAPI_accountKey": {
-			"value": ""
-		},
 		"AzureSqlDatabaseDS_password": {
 			"value": ""
 		},
 		"LS_Blob_accountKey": {
 			"value": ""
-		},
-		"AzureDataLakeStorageLSAPI_properties_typeProperties_url": {
-			"value": "https://mission100adermstrgaccc.dfs.core.windows.net/"
 		},
 		"AzureKeyVault1_properties_typeProperties_baseUrl": {
 			"value": "https://restapikeyvaultade.vault.azure.net/"
@@ -32,14 +26,17 @@
 		"LS_Blob_properties_typeProperties_url": {
 			"value": "https://mission100adermstrgaccc.dfs.core.windows.net/"
 		},
-		"RestService1_properties_typeProperties_url": {
-			"value": "https://api.restcountries.com/countries/v5"
-		},
 		"trg_customer_file_properties_PL_SCD2_RT_parameters_p_fileName": {
 			"value": "@triggerBody().fileName"
 		},
 		"trg_customer_file_properties_typeProperties_scope": {
 			"value": "/subscriptions/cbe7bd82-a4b0-4f95-be9d-036fd59408cc/resourceGroups/missin100adermrsg/providers/Microsoft.Storage/storageAccounts/mission100adermstrgaccc"
+		},
+		"LS_REST_Countries_properties_typeProperties_url": {
+			"value": "https://api.restcountries.com/countries/"
+		},
+		"LS_ADLS_Raw_properties_typeProperties_url": {
+			"value": "https://mission100adermstrgaccc.dfs.core.windows.net/"
 		},
 		"containerUri": {
 			"value": ""

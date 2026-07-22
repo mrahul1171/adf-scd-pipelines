@@ -7,10 +7,6 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "mission100dermadf"
 		},
-		"AzureDataLakeStorageLSAPI_accountKey": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorageLSAPI'"
-		},
 		"AzureSqlDatabaseDS_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDatabaseDS'"
@@ -18,10 +14,6 @@
 		"LS_Blob_accountKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'LS_Blob'"
-		},
-		"AzureDataLakeStorageLSAPI_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://mission100adermstrgaccc.dfs.core.windows.net/"
 		},
 		"AzureKeyVault1_properties_typeProperties_baseUrl": {
 			"type": "string",
@@ -43,10 +35,6 @@
 			"type": "string",
 			"defaultValue": "https://mission100adermstrgaccc.dfs.core.windows.net/"
 		},
-		"RestService1_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://api.restcountries.com/countries/v5"
-		},
 		"trg_customer_file_properties_PL_SCD2_RT_parameters_p_fileName": {
 			"type": "string",
 			"defaultValue": "@triggerBody().fileName"
@@ -54,6 +42,14 @@
 		"trg_customer_file_properties_typeProperties_scope": {
 			"type": "string",
 			"defaultValue": "/subscriptions/cbe7bd82-a4b0-4f95-be9d-036fd59408cc/resourceGroups/missin100adermrsg/providers/Microsoft.Storage/storageAccounts/mission100adermstrgaccc"
+		},
+		"LS_REST_Countries_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.restcountries.com/countries/"
+		},
+		"LS_ADLS_Raw_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://mission100adermstrgaccc.dfs.core.windows.net/"
 		},
 		"containerUri": {
 			"type": "string",
@@ -82,17 +78,11 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
-					"AzureDataLakeStorageLSAPI_accountKey": {
-						"value": "[parameters('AzureDataLakeStorageLSAPI_accountKey')]"
-					},
 					"AzureSqlDatabaseDS_password": {
 						"value": "[parameters('AzureSqlDatabaseDS_password')]"
 					},
 					"LS_Blob_accountKey": {
 						"value": "[parameters('LS_Blob_accountKey')]"
-					},
-					"AzureDataLakeStorageLSAPI_properties_typeProperties_url": {
-						"value": "[parameters('AzureDataLakeStorageLSAPI_properties_typeProperties_url')]"
 					},
 					"AzureKeyVault1_properties_typeProperties_baseUrl": {
 						"value": "[parameters('AzureKeyVault1_properties_typeProperties_baseUrl')]"
@@ -109,8 +99,11 @@
 					"LS_Blob_properties_typeProperties_url": {
 						"value": "[parameters('LS_Blob_properties_typeProperties_url')]"
 					},
-					"RestService1_properties_typeProperties_url": {
-						"value": "[parameters('RestService1_properties_typeProperties_url')]"
+					"LS_REST_Countries_properties_typeProperties_url": {
+						"value": "[parameters('LS_REST_Countries_properties_typeProperties_url')]"
+					},
+					"LS_ADLS_Raw_properties_typeProperties_url": {
+						"value": "[parameters('LS_ADLS_Raw_properties_typeProperties_url')]"
 					}
 				}
 			},

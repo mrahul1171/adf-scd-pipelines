@@ -1,0 +1,27 @@
+{
+	"name": "DS_REST_Country_ByName",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_REST_Countries",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"CountryName": {
+				"type": "string"
+			},
+			"ApiKey": {
+				"type": "string",
+				"defaultValue": "rc_live_89b0549fc51240de893ec9855404d51a"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat('v5/names.common/', replace(dataset().CountryName, ' ', '%20'), '?api-key=', dataset().ApiKey)",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	}
+}

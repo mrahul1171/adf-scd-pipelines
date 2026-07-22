@@ -1,0 +1,28 @@
+{
+	"name": "DS_ADLS_Country_JSON",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS_Raw",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"FileName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@concat(dataset().FileName, '.json')",
+					"type": "Expression"
+				},
+				"folderPath": "countries_by_name",
+				"fileSystem": "raw"
+			}
+		},
+		"schema": {}
+	}
+}

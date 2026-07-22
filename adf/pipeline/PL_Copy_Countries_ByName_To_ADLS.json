@@ -1,0 +1,116 @@
+{
+	"name": "PL_Copy_Countries_ByName_To_ADLS",
+	"properties": {
+		"activities": [
+			{
+				"name": "FE_Countries",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.CountryList",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "CP_Country_JSON",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "RestSource",
+									"httpRequestTimeout": "00:01:40",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": "GET",
+									"paginationRules": {
+										"supportRFC5988": "true"
+									}
+								},
+								"sink": {
+									"type": "JsonSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "JsonWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "DS_REST_Country_ByName",
+									"type": "DatasetReference",
+									"parameters": {
+										"CountryName": {
+											"value": "@item().lookup",
+											"type": "Expression"
+										},
+										"ApiKey": {
+											"value": "@pipeline().parameters.ApiKey",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DS_ADLS_Country_JSON",
+									"type": "DatasetReference",
+									"parameters": {
+										"FileName": {
+											"value": "@item().file",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"ApiKey": {
+				"type": "string",
+				"defaultValue": "rc_live_89b0549fc51240de893ec9855404d51a"
+			},
+			"CountryList": {
+				"type": "string",
+				"defaultValue": [
+					{
+						"lookup": "India",
+						"file": "india"
+					},
+					{
+						"lookup": "United States",
+						"file": "us"
+					},
+					{
+						"lookup": "United Kingdom",
+						"file": "uk"
+					},
+					{
+						"lookup": "China",
+						"file": "china"
+					},
+					{
+						"lookup": "Russia",
+						"file": "russia"
+					}
+				]
+			}
+		},
+		"annotations": []
+	}
+}

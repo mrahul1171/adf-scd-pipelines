@@ -1,0 +1,15 @@
+{
+	"name": "DS_REST_Countries",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_REST_Countries",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": "v5?limit=100&response_fields=names.common,names.official,codes.alpha_2,codes.alpha_3,capitals,region,subregion,population,area,coordinates,timezones,landlocked,flag.url_png&api-key=rc_live_89b0549fc51240de893ec9855404d51a"
+		},
+		"schema": []
+	}
+}

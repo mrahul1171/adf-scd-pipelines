@@ -1,0 +1,282 @@
+{
+	"name": "PL_Copy_Countries_To_ADLS",
+	"properties": {
+		"activities": [
+			{
+				"name": "CP_Countries_API_to_Parquet",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "['data']['objects'][0]['names']['common']"
+								},
+								"sink": {
+									"name": "common",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['names']['official']"
+								},
+								"sink": {
+									"name": "official",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['codes']['alpha_2']"
+								},
+								"sink": {
+									"name": "alpha_2",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['codes']['alpha_3']"
+								},
+								"sink": {
+									"name": "alpha_3",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['capitals'][0]['attributes']['administrative']"
+								},
+								"sink": {
+									"name": "administrative",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['capitals'][0]['attributes']['constitutional']"
+								},
+								"sink": {
+									"name": "constitutional",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['capitals'][0]['attributes']['executive']"
+								},
+								"sink": {
+									"name": "executive",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['capitals'][0]['attributes']['judicial']"
+								},
+								"sink": {
+									"name": "judicial",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['capitals'][0]['attributes']['legislative']"
+								},
+								"sink": {
+									"name": "legislative",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['capitals'][0]['attributes']['primary']"
+								},
+								"sink": {
+									"name": "primary",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['capitals'][0]['coordinates']['lat']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['capitals'][0]['coordinates_lat",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['capitals'][0]['coordinates']['lng']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['capitals'][0]['coordinates_lng",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['capitals'][0]['name']"
+								},
+								"sink": {
+									"name": "name",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['flag']['url_png']"
+								},
+								"sink": {
+									"name": "url_png",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['region']"
+								},
+								"sink": {
+									"name": "region",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['subregion']"
+								},
+								"sink": {
+									"name": "subregion",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['area']['kilometers']"
+								},
+								"sink": {
+									"name": "kilometers",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['area']['miles']"
+								},
+								"sink": {
+									"name": "miles",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['coordinates']['lat']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['coordinates_lat",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['coordinates']['lng']"
+								},
+								"sink": {
+									"name": "data_objects'][0]['coordinates_lng",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['landlocked']"
+								},
+								"sink": {
+									"name": "landlocked",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['population']"
+								},
+								"sink": {
+									"name": "population",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['timezones'][0]"
+								},
+								"sink": {
+									"name": "items",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['data']['objects'][0]['_meta']['lastUpdatedTimestamp']"
+								},
+								"sink": {
+									"name": "lastUpdatedTimestamp",
+									"type": "DateTimeOffset"
+								}
+							}
+						],
+						"collectionReference": "$"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_REST_Countries",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ADLS_Countries_Parquet",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": {
+								"value": "@concat('countries_', formatDateTime(utcNow(), 'yyyyMMdd_HHmmss'), '.parquet')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}

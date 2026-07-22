@@ -1,0 +1,45 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "mission100dermadf"
+		},
+		"AzureDataLakeStorageLSAPI_accountKey": {
+			"value": ""
+		},
+		"AzureSqlDatabaseDS_password": {
+			"value": ""
+		},
+		"LS_Blob_accountKey": {
+			"value": ""
+		},
+		"AzureDataLakeStorageLSAPI_properties_typeProperties_url": {
+			"value": "https://mission100adermstrgaccc.dfs.core.windows.net/"
+		},
+		"AzureKeyVault1_properties_typeProperties_baseUrl": {
+			"value": "https://restapikeyvaultade.vault.azure.net/"
+		},
+		"AzureSqlDatabaseDS_properties_typeProperties_server": {
+			"value": "mission100adermsqlserver.database.windows.net"
+		},
+		"AzureSqlDatabaseDS_properties_typeProperties_database": {
+			"value": "free-sql-db-8265899"
+		},
+		"AzureSqlDatabaseDS_properties_typeProperties_userName": {
+			"value": "raadmin"
+		},
+		"LS_Blob_properties_typeProperties_url": {
+			"value": "https://mission100adermstrgaccc.dfs.core.windows.net/"
+		},
+		"RestService1_properties_typeProperties_url": {
+			"value": "https://api.restcountries.com/countries/v5"
+		},
+		"trg_customer_file_properties_PL_SCD2_RT_parameters_p_fileName": {
+			"value": "@triggerBody().fileName"
+		},
+		"trg_customer_file_properties_typeProperties_scope": {
+			"value": "/subscriptions/cbe7bd82-a4b0-4f95-be9d-036fd59408cc/resourceGroups/missin100adermrsg/providers/Microsoft.Storage/storageAccounts/mission100adermstrgaccc"
+		}
+	}
+}

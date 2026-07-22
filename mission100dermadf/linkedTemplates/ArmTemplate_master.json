@@ -1,0 +1,146 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "mission100dermadf"
+		},
+		"AzureDataLakeStorageLSAPI_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorageLSAPI'"
+		},
+		"AzureSqlDatabaseDS_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'AzureSqlDatabaseDS'"
+		},
+		"LS_Blob_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'LS_Blob'"
+		},
+		"AzureDataLakeStorageLSAPI_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://mission100adermstrgaccc.dfs.core.windows.net/"
+		},
+		"AzureKeyVault1_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://restapikeyvaultade.vault.azure.net/"
+		},
+		"AzureSqlDatabaseDS_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "mission100adermsqlserver.database.windows.net"
+		},
+		"AzureSqlDatabaseDS_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "free-sql-db-8265899"
+		},
+		"AzureSqlDatabaseDS_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "raadmin"
+		},
+		"LS_Blob_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://mission100adermstrgaccc.dfs.core.windows.net/"
+		},
+		"RestService1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.restcountries.com/countries/v5"
+		},
+		"trg_customer_file_properties_PL_SCD2_RT_parameters_p_fileName": {
+			"type": "string",
+			"defaultValue": "@triggerBody().fileName"
+		},
+		"trg_customer_file_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/cbe7bd82-a4b0-4f95-be9d-036fd59408cc/resourceGroups/missin100adermrsg/providers/Microsoft.Storage/storageAccounts/mission100adermstrgaccc"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "mission100dermadf_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"AzureDataLakeStorageLSAPI_accountKey": {
+						"value": "[parameters('AzureDataLakeStorageLSAPI_accountKey')]"
+					},
+					"AzureSqlDatabaseDS_password": {
+						"value": "[parameters('AzureSqlDatabaseDS_password')]"
+					},
+					"LS_Blob_accountKey": {
+						"value": "[parameters('LS_Blob_accountKey')]"
+					},
+					"AzureDataLakeStorageLSAPI_properties_typeProperties_url": {
+						"value": "[parameters('AzureDataLakeStorageLSAPI_properties_typeProperties_url')]"
+					},
+					"AzureKeyVault1_properties_typeProperties_baseUrl": {
+						"value": "[parameters('AzureKeyVault1_properties_typeProperties_baseUrl')]"
+					},
+					"AzureSqlDatabaseDS_properties_typeProperties_server": {
+						"value": "[parameters('AzureSqlDatabaseDS_properties_typeProperties_server')]"
+					},
+					"AzureSqlDatabaseDS_properties_typeProperties_database": {
+						"value": "[parameters('AzureSqlDatabaseDS_properties_typeProperties_database')]"
+					},
+					"AzureSqlDatabaseDS_properties_typeProperties_userName": {
+						"value": "[parameters('AzureSqlDatabaseDS_properties_typeProperties_userName')]"
+					},
+					"LS_Blob_properties_typeProperties_url": {
+						"value": "[parameters('LS_Blob_properties_typeProperties_url')]"
+					},
+					"RestService1_properties_typeProperties_url": {
+						"value": "[parameters('RestService1_properties_typeProperties_url')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "mission100dermadf_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"trg_customer_file_properties_PL_SCD2_RT_parameters_p_fileName": {
+						"value": "[parameters('trg_customer_file_properties_PL_SCD2_RT_parameters_p_fileName')]"
+					},
+					"trg_customer_file_properties_typeProperties_scope": {
+						"value": "[parameters('trg_customer_file_properties_typeProperties_scope')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'mission100dermadf_ArmTemplate_0')]"
+			]
+		}
+	]
+}

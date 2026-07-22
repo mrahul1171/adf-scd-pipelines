@@ -1,0 +1,1191 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "mission100dermadf"
+		},
+		"trg_customer_file_properties_PL_SCD2_RT_parameters_p_fileName": {
+			"type": "string",
+			"defaultValue": "@triggerBody().fileName"
+		},
+		"trg_customer_file_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/cbe7bd82-a4b0-4f95-be9d-036fd59408cc/resourceGroups/missin100adermrsg/providers/Microsoft.Storage/storageAccounts/mission100adermstrgaccc"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_SCD2_RT')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_csv_in",
+								"type": "DatasetReference"
+							},
+							"name": "srcCsv"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_dim_rt",
+								"type": "DatasetReference"
+							},
+							"name": "dimSrc"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_dim_rt",
+								"type": "DatasetReference"
+							},
+							"name": "sinkExpire"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_dim_rt",
+								"type": "DatasetReference"
+							},
+							"name": "sinkInsert"
+						}
+					],
+					"transformations": [
+						{
+							"name": "castTypes"
+						},
+						{
+							"name": "fltWatermark"
+						},
+						{
+							"name": "winRank"
+						},
+						{
+							"name": "fltLatest"
+						},
+						{
+							"name": "drvHash"
+						},
+						{
+							"name": "fltCurrent"
+						},
+						{
+							"name": "selDimRename"
+						},
+						{
+							"name": "lkpCurrent"
+						},
+						{
+							"name": "drvAction"
+						},
+						{
+							"name": "splitAction"
+						},
+						{
+							"name": "selExpire"
+						},
+						{
+							"name": "drvExpire"
+						},
+						{
+							"name": "alterExpire"
+						},
+						{
+							"name": "selInsClean"
+						},
+						{
+							"name": "selScd2Clean"
+						},
+						{
+							"name": "unionNew"
+						},
+						{
+							"name": "drvVersion"
+						},
+						{
+							"name": "selClean"
+						},
+						{
+							"name": "alterIns"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     p_watermark as string ('1900-01-01 00:00:00'),",
+						"     p_effDate as string ('2026-01-01'),",
+						"     p_fileName as string ('customer_delta_20260701.csv'),",
+						"     p_batchId as string ('manual-debug')",
+						"}",
+						"source(output(",
+						"          customer_id as short,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string,",
+						"          customer_tier as string,",
+						"          updated_at as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> srcCsv",
+						"source(output(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string,",
+						"          customer_tier as string,",
+						"          hash_scd2 as string,",
+						"          effective_start_date as date,",
+						"          effective_end_date as date,",
+						"          is_current as string,",
+						"          source_file as string,",
+						"          batch_id as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> dimSrc",
+						"srcCsv cast(output(",
+						"          customer_id as integer,",
+						"          updated_at as timestamp 'yyyy-MM-dd HH:mm:ss'",
+						"     ),",
+						"     errors: true) ~> castTypes",
+						"castTypes filter(updated_at > toTimestamp($p_watermark, 'yyyy-MM-dd HH:mm:ss')) ~> fltWatermark",
+						"fltWatermark window(over(customer_id),",
+						"     desc(updated_at, true),",
+						"     rn = rowNumber()) ~> winRank",
+						"winRank filter(rn == 1) ~> fltLatest",
+						"fltLatest derive(hash_scd2 = md5(concat(iifNull(city, '~'), '|', iifNull(customer_tier, '~')))) ~> drvHash",
+						"dimSrc filter(is_current == 'Y') ~> fltCurrent",
+						"fltCurrent select(mapColumn(",
+						"          dim_customer_sk = customer_sk,",
+						"          dim_customer_id = customer_id,",
+						"          dim_hash_scd2 = hash_scd2",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selDimRename",
+						"drvHash, selDimRename lookup(customer_id == dim_customer_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lkpCurrent",
+						"lkpCurrent derive(action = iif(isNull(dim_customer_id), 'INSERT', iif( dim_hash_scd2 != hash_scd2, 'SCD2','NOCHANGE'))) ~> drvAction",
+						"drvAction split(action == 'INSERT',",
+						"     action == 'SCD2',",
+						"     disjoint: false) ~> splitAction@(streamInsert, streamSCD2, streamNoChange)",
+						"splitAction@streamSCD2 select(mapColumn(",
+						"          customer_sk = dim_customer_sk",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selExpire",
+						"selExpire derive(effective_end_date = addDays(toDate($p_effDate), -1),",
+						"          is_current = 'N') ~> drvExpire",
+						"drvExpire alterRow(updateIf(true())) ~> alterExpire",
+						"splitAction@streamInsert select(mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          city,",
+						"          customer_tier,",
+						"          updated_at,",
+						"          hash_scd2,",
+						"          action",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selInsClean",
+						"splitAction@streamSCD2 select(mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          city,",
+						"          customer_tier,",
+						"          updated_at,",
+						"          hash_scd2,",
+						"          action",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selScd2Clean",
+						"selInsClean, selScd2Clean union(byName: true)~> unionNew",
+						"unionNew derive(effective_start_date = toDate($p_effDate),",
+						"          effective_end_date = toDate('9999-12-31'),",
+						"          is_current = 'Y',",
+						"          source_file = $p_effDate,",
+						"          batch_id = $p_batchId) ~> drvVersion",
+						"drvVersion select(mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          city,",
+						"          customer_tier,",
+						"          updated_at,",
+						"          hash_scd2,",
+						"          effective_start_date,",
+						"          effective_end_date,",
+						"          is_current,",
+						"          source_file,",
+						"          batch_id",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selClean",
+						"selClean alterRow(insertIf(true())) ~> alterIns",
+						"alterExpire sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string,",
+						"          customer_tier as string,",
+						"          hash_scd2 as string,",
+						"          effective_start_date as date,",
+						"          effective_end_date as date,",
+						"          is_current as string,",
+						"          source_file as string,",
+						"          batch_id as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:[('customer_sk')],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          customer_sk,",
+						"          effective_end_date,",
+						"          is_current",
+						"     )) ~> sinkExpire",
+						"alterIns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string,",
+						"          customer_tier as string,",
+						"          hash_scd2 as string,",
+						"          effective_start_date as date,",
+						"          effective_end_date as date,",
+						"          is_current as string,",
+						"          source_file as string,",
+						"          batch_id as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 2,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          city,",
+						"          customer_tier,",
+						"          hash_scd2,",
+						"          effective_start_date,",
+						"          effective_end_date,",
+						"          is_current,",
+						"          source_file,",
+						"          batch_id",
+						"     )) ~> sinkInsert"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_SCD3_CSV')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_csv_customers",
+								"type": "DatasetReference"
+							},
+							"name": "srcCsv"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_dim_customer3",
+								"type": "DatasetReference"
+							},
+							"name": "dimT3"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_dim_customer3",
+								"type": "DatasetReference"
+							},
+							"name": "sinkIns"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_dim_customer3",
+								"type": "DatasetReference"
+							},
+							"name": "sinkUpd",
+							"rejectedDataLinkedService": {
+								"referenceName": "LS_Blob",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_dim_customer3",
+								"type": "DatasetReference"
+							},
+							"name": "sinkT1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "castTypes"
+						},
+						{
+							"name": "winRank"
+						},
+						{
+							"name": "fltLatest"
+						},
+						{
+							"name": "selDimRename"
+						},
+						{
+							"name": "lkpDim"
+						},
+						{
+							"name": "drvAction"
+						},
+						{
+							"name": "splitAction"
+						},
+						{
+							"name": "drvInit"
+						},
+						{
+							"name": "selIns"
+						},
+						{
+							"name": "alterIns"
+						},
+						{
+							"name": "drvShift"
+						},
+						{
+							"name": "selShift"
+						},
+						{
+							"name": "alterUpd"
+						},
+						{
+							"name": "selT1"
+						},
+						{
+							"name": "derivedT1"
+						},
+						{
+							"name": "alterT1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          customer_id as string,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string,",
+						"          updated_at as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     moveFiles: ['incoming','processed'],",
+						"     rowUrlColumn: 'source_file',",
+						"     wildcardPaths:['incoming/customers_*.csv']) ~> srcCsv",
+						"source(output(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          current_city as string,",
+						"          previous_city as string,",
+						"          city_change_date as date,",
+						"          source_file as string,",
+						"          dw_update_dt as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> dimT3",
+						"srcCsv cast(output(",
+						"          customer_id as integer,",
+						"          updated_at as timestamp 'yyyy-MM-dd HH:mm:ss'",
+						"     ),",
+						"     errors: true) ~> castTypes",
+						"castTypes window(over(customer_id),",
+						"     asc(updated_at, true),",
+						"     rn = rowNumber()) ~> winRank",
+						"winRank filter(rn == 1) ~> fltLatest",
+						"dimT3 select(mapColumn(",
+						"          dim_customer_id = customer_id,",
+						"          dim_email = email,",
+						"          dim_current_city = current_city,",
+						"          dim_previous_city = previous_city",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selDimRename",
+						"fltLatest, selDimRename lookup(customer_id == dim_customer_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lkpDim",
+						"lkpDim derive(action = iif(isNull(dim_customer_id), 'INSERT', iif(dim_current_city != city, 'SHIFT', iif(dim_email != email, 'T1', 'NOCHANGE')))) ~> drvAction",
+						"drvAction split(action == 'INSERT',",
+						"     action == 'SHIFT',",
+						"     action == 'T1',",
+						"     disjoint: false) ~> splitAction@(streamInsert, streamShift, streamT1, streamNoChange)",
+						"splitAction@streamInsert derive(current_city = city,",
+						"          previous_city = toString(null()),",
+						"          dw_update_dt = currentTimestamp()) ~> drvInit",
+						"drvInit select(mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          source_file,",
+						"          action,",
+						"          current_city,",
+						"          previous_city,",
+						"          dw_update_dt",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selIns",
+						"selIns alterRow(insertIf(true())) ~> alterIns",
+						"splitAction@streamShift derive(previous_city = dim_current_city,",
+						"          current_city = city,",
+						"          city_change_date = currentDate(),",
+						"          dw_update_dt = currentTimestamp()) ~> drvShift",
+						"drvShift select(mapColumn(",
+						"          customer_id,",
+						"          email,",
+						"          dw_update_dt",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selShift",
+						"selShift alterRow(updateIf(true())) ~> alterUpd",
+						"splitAction@streamT1 select(mapColumn(",
+						"          customer_id,",
+						"          email",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selT1",
+						"selT1 derive(dw_update_dt = currentTimestamp()) ~> derivedT1",
+						"derivedT1 alterRow(updateIf(true())) ~> alterT1",
+						"alterIns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          current_city as string,",
+						"          previous_city as string,",
+						"          city_change_date as date,",
+						"          source_file as string,",
+						"          dw_update_dt as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          current_city,",
+						"          previous_city,",
+						"          source_file,",
+						"          dw_update_dt",
+						"     )) ~> sinkIns",
+						"alterUpd sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          current_city as string,",
+						"          previous_city as string,",
+						"          city_change_date as date,",
+						"          source_file as string,",
+						"          dw_update_dt as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:['customer_id'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sinkUpd",
+						"alterT1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          current_city as string,",
+						"          previous_city as string,",
+						"          city_change_date as date,",
+						"          source_file as string,",
+						"          dw_update_dt as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:['customer_id'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          customer_id,",
+						"          email,",
+						"          dw_update_dt",
+						"     )) ~> sinkT1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_SCD1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "PL_DF_SCD1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_SCD1",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcCustomer": {},
+									"sinkDim": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-18T08:40:55Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_SCD2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "LKP_wm",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "SELECT last_run_ts AS wm FROM etl_control WHERE job_name='scd2_customer'",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "DS_src_customer2",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "DF_SCD2",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "LKP_wm",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_SCD2",
+								"type": "DataFlowReference",
+								"parameters": {
+									"p_watermark": {
+										"value": "'@{formatDateTime(activity('LKP_wm').output.firstRow.wm, 'yyyy-MM-dd HH:mm:ss')}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"srcCustomer": {},
+									"dimCustomer": {},
+									"sinkInsert": {},
+									"sinkExpire": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "UPD_wm",
+						"type": "Script",
+						"dependsOn": [
+							{
+								"activity": "DF_SCD2",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "AzureSqlDatabaseDS",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": "UPDATE etl_control SET last_run_ts = GETDATE() WHERE job_name='scd2_customer'"
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-18T13:36:16Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_SCD2_RT')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "LKP_watermark",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "DS_watermark",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "DF_SCD2_RT",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "LKP_watermark",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_SCD2_RT",
+								"type": "DataFlowReference",
+								"parameters": {
+									"p_watermark": {
+										"value": "'@{activity('LKP_watermark').output.firstRow.last_run_ts}'",
+										"type": "Expression"
+									},
+									"p_effDate": {
+										"value": "'@{formatDateTime(concat(substring(pipeline().parameters.p_fileName,15,4),'-',substring(pipeline().parameters.p_fileName,19,2),'-',substring(pipeline().parameters.p_fileName,21,2)),'yyyy-MM-dd')}'",
+										"type": "Expression"
+									},
+									"p_fileName": {
+										"value": "'@{pipeline().parameters.p_fileName}'",
+										"type": "Expression"
+									},
+									"p_batchId": {
+										"value": "'@{pipeline().RunId}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"srcCsv": {
+										"p_file": {
+											"value": "@pipeline().parameters.p_fileName",
+											"type": "Expression"
+										}
+									},
+									"dimSrc": {},
+									"sinkExpire": {},
+									"sinkInsert": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "CP_archive",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "DF_SCD2_RT",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_csv_in",
+								"type": "DatasetReference",
+								"parameters": {
+									"p_file": {
+										"value": "@pipeline().parameters.p_fileName",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_processed",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "DEL_source",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "CP_archive",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_csv_in",
+								"type": "DatasetReference",
+								"parameters": {
+									"p_file": {
+										"value": "@pipeline().parameters.p_fileName",
+										"type": "Expression"
+									}
+								}
+							},
+							"enableLogging": false,
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "CP_watermark",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "DEL_source",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "SELECT '@{formatDateTime(utcNow(),'yyyy-MM-dd HH:mm:ss')}' AS last_run_ts,\n       '@{formatDateTime(concat(substring(pipeline().parameters.p_fileName,15,4),'-',substring(pipeline().parameters.p_fileName,19,2),'-',substring(pipeline().parameters.p_fileName,21,2)),'yyyy-MM-dd')}' AS last_effective_date",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_dim_rt",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_watermark",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "WEB_success",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "CP_watermark",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {
+								"Content-Type": "application/json"
+							},
+							"url": "https://prod-115.westus.logic.azure.com:443/workflows/056053ac828741bdb448559fef12c58f/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=tCfwCCTVdaW2HXW-y3mk6hVDt0qer0SsqOtb2jJ5LaU",
+							"body": {
+								"value": "{\n \"pipeline\": \"@{pipeline().Pipeline}\",\n \"runId\": \"@{pipeline().RunId}\",\n \"status\": \"SUCCESS\",\n \"file\": \"@{pipeline().parameters.p_fileName}\",\n \"message\": \"Inserted: @{activity('DF_SCD2_RT').output.runStatus.metrics.sinkInsert.rowsWritten} | Expired: @{activity('DF_SCD2_RT').output.runStatus.metrics.sinkExpire.rowsWritten}\"\n}",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "WEB_fail",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "DF_SCD2_RT",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {
+								"Content-Type": "application/json"
+							},
+							"url": "https://prod-115.westus.logic.azure.com:443/workflows/056053ac828741bdb448559fef12c58f/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=tCfwCCTVdaW2HXW-y3mk6hVDt0qer0SsqOtb2jJ5LaU",
+							"body": {
+								"value": "{\n \"pipeline\": \"@{pipeline().Pipeline}\",\n \"runId\": \"@{pipeline().RunId}\",\n \"status\": \"FAILED\",\n \"file\": \"@{pipeline().parameters.p_fileName}\",\n \"message\": \"@{activity('DF_SCD2_RT').error.message}\"\n}",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"concurrency": 1,
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"p_fileName": {
+						"type": "string",
+						"defaultValue": "customer_delta_20260701.csv"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-20T20:06:23Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/DF_SCD2_RT')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_SCD3_CSV')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flowSCD3",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_SCD3_CSV",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcCsv": {},
+									"dimT3": {},
+									"sinkIns": {},
+									"sinkUpd": {},
+									"sinkT1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-18T20:43:27Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/DF_SCD3_CSV')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/trg_customer_file')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "PL_SCD2_RT",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"p_fileName": "[parameters('trg_customer_file_properties_PL_SCD2_RT_parameters_p_fileName')]"
+						}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/scd-input/blobs/incoming/customer_delta_",
+					"blobPathEndsWith": ".csv",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('trg_customer_file_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/PL_SCD2_RT')]"
+			]
+		}
+	]
+}

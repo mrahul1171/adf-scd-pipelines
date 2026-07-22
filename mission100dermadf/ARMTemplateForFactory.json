@@ -1,0 +1,4043 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "mission100dermadf"
+		},
+		"AzureDataLakeStorageLSAPI_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorageLSAPI'"
+		},
+		"AzureSqlDatabaseDS_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'AzureSqlDatabaseDS'"
+		},
+		"LS_Blob_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'LS_Blob'"
+		},
+		"AzureDataLakeStorageLSAPI_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://mission100adermstrgaccc.dfs.core.windows.net/"
+		},
+		"AzureKeyVault1_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://restapikeyvaultade.vault.azure.net/"
+		},
+		"AzureSqlDatabaseDS_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "mission100adermsqlserver.database.windows.net"
+		},
+		"AzureSqlDatabaseDS_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "free-sql-db-8265899"
+		},
+		"AzureSqlDatabaseDS_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "raadmin"
+		},
+		"LS_Blob_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://mission100adermstrgaccc.dfs.core.windows.net/"
+		},
+		"RestService1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.restcountries.com/countries/v5"
+		},
+		"trg_customer_file_properties_PL_SCD2_RT_parameters_p_fileName": {
+			"type": "string",
+			"defaultValue": "@triggerBody().fileName"
+		},
+		"trg_customer_file_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/cbe7bd82-a4b0-4f95-be9d-036fd59408cc/resourceGroups/missin100adermrsg/providers/Microsoft.Storage/storageAccounts/mission100adermstrgaccc"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_Ingest_Countries')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy API JSON",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Get_ApiKey",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET",
+								"additionalHeaders": {
+									"Authorization": {
+										"value": "@concat('Bearer ', activity('Get_ApiKey').output.value)",
+										"type": "Expression"
+									}
+								},
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "[['names']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['native']['eng']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_native_eng_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['native']['eng']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_native_eng_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['native']['fra']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_native_fra_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['native']['fra']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_native_fra_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['ara']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_ara_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['ara']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_ara_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['bre']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_bre_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['bre']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_bre_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['ces']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_ces_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['ces']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_ces_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['cym']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_cym_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['cym']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_cym_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['deu']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_deu_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['deu']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_deu_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['est']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_est_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['est']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_est_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['fas']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_fas_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['fas']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_fas_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['fin']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_fin_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['fin']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_fin_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['fra']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_fra_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['fra']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_fra_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['hrv']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_hrv_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['hrv']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_hrv_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['hun']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_hun_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['hun']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_hun_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['ind']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_ind_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['ind']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_ind_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['ita']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_ita_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['ita']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_ita_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['jpn']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_jpn_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['jpn']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_jpn_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['kor']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_kor_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['kor']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_kor_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['nld']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_nld_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['nld']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_nld_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['pol']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_pol_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['pol']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_pol_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['por']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_por_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['por']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_por_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['rus']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_rus_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['rus']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_rus_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['slk']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_slk_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['slk']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_slk_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['spa']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_spa_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['spa']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_spa_official"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['srp']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_srp_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['srp']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_srp_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['swe']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_swe_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['swe']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_swe_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['tur']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_tur_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['tur']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_tur_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['urd']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_urd_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['urd']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_urd_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['zho']['common']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_zho_common",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['translations']['zho']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_translations_zho_official",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['codes']['alpha_2']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['codes_alpha_2",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['codes']['alpha_3']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['codes_alpha_3",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['codes']['ccn3']"
+										},
+										"sink": {
+											"name": "ccn3",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['codes']['cioc']"
+										},
+										"sink": {
+											"name": "cioc",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['codes']['fifa']"
+										},
+										"sink": {
+											"name": "fifa",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['codes']['fips']"
+										},
+										"sink": {
+											"name": "fips",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['codes']['gec']"
+										},
+										"sink": {
+											"name": "gec",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['colors']['dominant']"
+										},
+										"sink": {
+											"name": "dominant",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['colors']['prominent']"
+										},
+										"sink": {
+											"name": "prominent",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['colors']['swatches']['dark_muted']"
+										},
+										"sink": {
+											"name": "dark_muted",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['colors']['swatches']['dark_vibrant']"
+										},
+										"sink": {
+											"name": "dark_vibrant",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['colors']['swatches']['light_muted']"
+										},
+										"sink": {
+											"name": "light_muted",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['colors']['swatches']['light_vibrant']"
+										},
+										"sink": {
+											"name": "light_vibrant",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['colors']['swatches']['muted']"
+										},
+										"sink": {
+											"name": "muted",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['colors']['swatches']['vibrant']"
+										},
+										"sink": {
+											"name": "vibrant",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['description']"
+										},
+										"sink": {
+											"name": "description",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['emoji']"
+										},
+										"sink": {
+											"name": "emoji",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['html_entity']"
+										},
+										"sink": {
+											"name": "html_entity",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['unicode']"
+										},
+										"sink": {
+											"name": "unicode",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['url_png']"
+										},
+										"sink": {
+											"name": "url_png",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['url_svg']"
+										},
+										"sink": {
+											"name": "url_svg",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['region']"
+										},
+										"sink": {
+											"name": "region",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['subregion']"
+										},
+										"sink": {
+											"name": "subregion",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['area']['kilometers']"
+										},
+										"sink": {
+											"name": "kilometers",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['area']['miles']"
+										},
+										"sink": {
+											"name": "miles",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['cars']['driving_side']"
+										},
+										"sink": {
+											"name": "driving_side",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['classification']['dependency']"
+										},
+										"sink": {
+											"name": "dependency",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['classification']['dependency_type']"
+										},
+										"sink": {
+											"name": "dependency_type",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['classification']['disputed']"
+										},
+										"sink": {
+											"name": "disputed",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['classification']['iso_status']"
+										},
+										"sink": {
+											"name": "iso_status",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['classification']['sovereign']"
+										},
+										"sink": {
+											"name": "sovereign",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['classification']['un_member']"
+										},
+										"sink": {
+											"name": "un_member",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['classification']['un_observer']"
+										},
+										"sink": {
+											"name": "un_observer",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['coordinates']['lat']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['coordinates_lat"
+										}
+									},
+									{
+										"source": {
+											"path": "[['coordinates']['lng']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['coordinates_lng"
+										}
+									},
+									{
+										"source": {
+											"path": "[['date']['academic_year_start']['day']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['date_academic_year_start_day"
+										}
+									},
+									{
+										"source": {
+											"path": "[['date']['academic_year_start']['month']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['date_academic_year_start_month"
+										}
+									},
+									{
+										"source": {
+											"path": "[['date']['fiscal_year_start']['corporate']['basis']"
+										},
+										"sink": {
+											"name": "basis"
+										}
+									},
+									{
+										"source": {
+											"path": "[['date']['fiscal_year_start']['corporate']['day']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['date_fiscal_year_start_corporate_day"
+										}
+									},
+									{
+										"source": {
+											"path": "[['date']['fiscal_year_start']['corporate']['month']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['date_fiscal_year_start_corporate_month"
+										}
+									},
+									{
+										"source": {
+											"path": "[['date']['fiscal_year_start']['government']['day']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['date_fiscal_year_start_government_day"
+										}
+									},
+									{
+										"source": {
+											"path": "[['date']['fiscal_year_start']['government']['month']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['date_fiscal_year_start_government_month"
+										}
+									},
+									{
+										"source": {
+											"path": "[['date']['fiscal_year_start']['personal']['day']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['date_fiscal_year_start_personal_day"
+										}
+									},
+									{
+										"source": {
+											"path": "[['date']['fiscal_year_start']['personal']['month']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['date_fiscal_year_start_personal_month"
+										}
+									},
+									{
+										"source": {
+											"path": "[['date']['start_of_week']"
+										},
+										"sink": {
+											"name": "start_of_week"
+										}
+									},
+									{
+										"source": {
+											"path": "[['demonyms']['eng']['f']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['demonyms_eng_f"
+										}
+									},
+									{
+										"source": {
+											"path": "[['demonyms']['eng']['m']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['demonyms_eng_m"
+										}
+									},
+									{
+										"source": {
+											"path": "[['demonyms']['fra']['f']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['demonyms_fra_f"
+										}
+									},
+									{
+										"source": {
+											"path": "[['demonyms']['fra']['m']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['demonyms_fra_m"
+										}
+									},
+									{
+										"source": {
+											"path": "[['economy']['gini_coefficient']['2018']"
+										},
+										"sink": {
+											"name": "2018"
+										}
+									},
+									{
+										"source": {
+											"path": "[['economy']['gini_coefficient']['2019']"
+										},
+										"sink": {
+											"name": "2019"
+										}
+									},
+									{
+										"source": {
+											"path": "[['economy']['gini_coefficient']['2020']"
+										},
+										"sink": {
+											"name": "2020"
+										}
+									},
+									{
+										"source": {
+											"path": "[['economy']['gini_coefficient']['2021']"
+										},
+										"sink": {
+											"name": "2021"
+										}
+									},
+									{
+										"source": {
+											"path": "[['economy']['gini_coefficient']['2022']"
+										},
+										"sink": {
+											"name": "2022"
+										}
+									},
+									{
+										"source": {
+											"path": "[['government_type']"
+										},
+										"sink": {
+											"name": "government_type"
+										}
+									},
+									{
+										"source": {
+											"path": "[['landlocked']"
+										},
+										"sink": {
+											"name": "landlocked"
+										}
+									},
+									{
+										"source": {
+											"path": "[['links']['google_maps']"
+										},
+										"sink": {
+											"name": "google_maps"
+										}
+									},
+									{
+										"source": {
+											"path": "[['links']['official']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['links_official"
+										}
+									},
+									{
+										"source": {
+											"path": "[['links']['open_street_maps']"
+										},
+										"sink": {
+											"name": "open_street_maps"
+										}
+									},
+									{
+										"source": {
+											"path": "[['links']['wikipedia']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['links_wikipedia"
+										}
+									},
+									{
+										"source": {
+											"path": "[['memberships']['african_union']"
+										},
+										"sink": {
+											"name": "african_union"
+										}
+									},
+									{
+										"source": {
+											"path": "[['memberships']['arab_league']"
+										},
+										"sink": {
+											"name": "arab_league"
+										}
+									},
+									{
+										"source": {
+											"path": "[['memberships']['asean']"
+										},
+										"sink": {
+											"name": "asean"
+										}
+									},
+									{
+										"source": {
+											"path": "[['memberships']['brics']"
+										},
+										"sink": {
+											"name": "brics"
+										}
+									},
+									{
+										"source": {
+											"path": "[['memberships']['commonwealth']"
+										},
+										"sink": {
+											"name": "commonwealth"
+										}
+									},
+									{
+										"source": {
+											"path": "[['memberships']['eu']"
+										},
+										"sink": {
+											"name": "eu"
+										}
+									},
+									{
+										"source": {
+											"path": "[['memberships']['eurozone']"
+										},
+										"sink": {
+											"name": "eurozone"
+										}
+									},
+									{
+										"source": {
+											"path": "[['memberships']['g20']"
+										},
+										"sink": {
+											"name": "g20"
+										}
+									},
+									{
+										"source": {
+											"path": "[['memberships']['g7']"
+										},
+										"sink": {
+											"name": "g7"
+										}
+									},
+									{
+										"source": {
+											"path": "[['memberships']['nato']"
+										},
+										"sink": {
+											"name": "nato"
+										}
+									},
+									{
+										"source": {
+											"path": "[['memberships']['oecd']"
+										},
+										"sink": {
+											"name": "oecd"
+										}
+									},
+									{
+										"source": {
+											"path": "[['memberships']['opec']"
+										},
+										"sink": {
+											"name": "opec"
+										}
+									},
+									{
+										"source": {
+											"path": "[['memberships']['schengen']"
+										},
+										"sink": {
+											"name": "schengen"
+										}
+									},
+									{
+										"source": {
+											"path": "[['memberships']['un']"
+										},
+										"sink": {
+											"name": "un"
+										}
+									},
+									{
+										"source": {
+											"path": "[['number_format']['decimal_separator']"
+										},
+										"sink": {
+											"name": "decimal_separator"
+										}
+									},
+									{
+										"source": {
+											"path": "[['number_format']['thousands_separator']"
+										},
+										"sink": {
+											"name": "thousands_separator"
+										}
+									},
+									{
+										"source": {
+											"path": "[['parent']['alpha_2']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['parent_alpha_2"
+										}
+									},
+									{
+										"source": {
+											"path": "[['parent']['alpha_3']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['parent_alpha_3"
+										}
+									},
+									{
+										"source": {
+											"path": "[['population']"
+										},
+										"sink": {
+											"name": "population"
+										}
+									},
+									{
+										"source": {
+											"path": "[['postal_code']['format']"
+										},
+										"sink": {
+											"name": "format"
+										}
+									},
+									{
+										"source": {
+											"path": "[['postal_code']['regex']"
+										},
+										"sink": {
+											"name": "regex"
+										}
+									},
+									{
+										"source": {
+											"path": "[['units']['measurement_system']"
+										},
+										"sink": {
+											"name": "measurement_system"
+										}
+									},
+									{
+										"source": {
+											"path": "[['units']['temperature_scale']"
+										},
+										"sink": {
+											"name": "temperature_scale"
+										}
+									},
+									{
+										"source": {
+											"path": "[['uuid']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['uuid"
+										}
+									},
+									{
+										"source": {
+											"path": "[['_meta']['lastUpdatedTimestamp']"
+										},
+										"sink": {
+											"name": "lastUpdatedTimestamp"
+										}
+									},
+									{
+										"source": {
+											"path": "$['data']['_demo']['message']"
+										},
+										"sink": {
+											"name": "message"
+										}
+									},
+									{
+										"source": {
+											"path": "$['data']['_demo']['signup_url']"
+										},
+										"sink": {
+											"name": "signup_url"
+										}
+									},
+									{
+										"source": {
+											"path": "$['data']['meta']['total']"
+										},
+										"sink": {
+											"name": "total"
+										}
+									},
+									{
+										"source": {
+											"path": "$['data']['meta']['request_id']"
+										},
+										"sink": {
+											"name": "request_id"
+										}
+									},
+									{
+										"source": {
+											"path": "[['names']['alternates'][0]"
+										},
+										"sink": {
+											"name": "data_objects'][0]['names_alternates']["
+										}
+									},
+									{
+										"source": {
+											"path": "[['capitals'][0]['attributes']['administrative']"
+										},
+										"sink": {
+											"name": "administrative"
+										}
+									},
+									{
+										"source": {
+											"path": "[['capitals'][0]['attributes']['constitutional']"
+										},
+										"sink": {
+											"name": "constitutional"
+										}
+									},
+									{
+										"source": {
+											"path": "[['capitals'][0]['attributes']['executive']"
+										},
+										"sink": {
+											"name": "executive"
+										}
+									},
+									{
+										"source": {
+											"path": "[['capitals'][0]['attributes']['judicial']"
+										},
+										"sink": {
+											"name": "judicial"
+										}
+									},
+									{
+										"source": {
+											"path": "[['capitals'][0]['attributes']['legislative']"
+										},
+										"sink": {
+											"name": "legislative"
+										}
+									},
+									{
+										"source": {
+											"path": "[['capitals'][0]['attributes']['primary']"
+										},
+										"sink": {
+											"name": "primary"
+										}
+									},
+									{
+										"source": {
+											"path": "[['capitals'][0]['coordinates']['lat']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['capitals'][0]['coordinates_lat"
+										}
+									},
+									{
+										"source": {
+											"path": "[['capitals'][0]['coordinates']['lng']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['capitals'][0]['coordinates_lng"
+										}
+									},
+									{
+										"source": {
+											"path": "[['capitals'][0]['name']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['capitals'][0]['name"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['colors']['palette'][0]['hex']"
+										},
+										"sink": {
+											"name": "hex"
+										}
+									},
+									{
+										"source": {
+											"path": "[['flag']['colors']['palette'][0]['proportion']"
+										},
+										"sink": {
+											"name": "proportion"
+										}
+									},
+									{
+										"source": {
+											"path": "[['assets'][0]"
+										},
+										"sink": {
+											"name": "data_objects'][0]['assets']["
+										}
+									},
+									{
+										"source": {
+											"path": "[['borders'][0]"
+										},
+										"sink": {
+											"name": "data_objects'][0]['borders']["
+										}
+									},
+									{
+										"source": {
+											"path": "[['calling_codes'][0]"
+										},
+										"sink": {
+											"name": "data_objects'][0]['calling_codes']["
+										}
+									},
+									{
+										"source": {
+											"path": "[['cars']['signs'][0]"
+										},
+										"sink": {
+											"name": "data_objects'][0]['cars_signs']["
+										}
+									},
+									{
+										"source": {
+											"path": "[['continents'][0]"
+										},
+										"sink": {
+											"name": "data_objects'][0]['continents']["
+										}
+									},
+									{
+										"source": {
+											"path": "[['currencies'][0]['code']"
+										},
+										"sink": {
+											"name": "code"
+										}
+									},
+									{
+										"source": {
+											"path": "[['currencies'][0]['name']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['currencies'][0]['name"
+										}
+									},
+									{
+										"source": {
+											"path": "[['currencies'][0]['symbol']"
+										},
+										"sink": {
+											"name": "symbol"
+										}
+									},
+									{
+										"source": {
+											"path": "[['languages'][0]['bcp47']"
+										},
+										"sink": {
+											"name": "bcp47"
+										}
+									},
+									{
+										"source": {
+											"path": "[['languages'][0]['iso639_1']"
+										},
+										"sink": {
+											"name": "iso639_1"
+										}
+									},
+									{
+										"source": {
+											"path": "[['languages'][0]['iso639_2b']"
+										},
+										"sink": {
+											"name": "iso639_2b"
+										}
+									},
+									{
+										"source": {
+											"path": "[['languages'][0]['iso639_2t']"
+										},
+										"sink": {
+											"name": "iso639_2t"
+										}
+									},
+									{
+										"source": {
+											"path": "[['languages'][0]['iso639_3']"
+										},
+										"sink": {
+											"name": "iso639_3"
+										}
+									},
+									{
+										"source": {
+											"path": "[['languages'][0]['name']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['languages'][0]['name"
+										}
+									},
+									{
+										"source": {
+											"path": "[['languages'][0]['native_name']"
+										},
+										"sink": {
+											"name": "native_name"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['content_hash']"
+										},
+										"sink": {
+											"name": "content_hash"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['content_type']"
+										},
+										"sink": {
+											"name": "content_type"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['filesize']"
+										},
+										"sink": {
+											"name": "filesize"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['height']"
+										},
+										"sink": {
+											"name": "height"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['max_edge']"
+										},
+										"sink": {
+											"name": "max_edge"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['url']"
+										},
+										"sink": {
+											"name": "url"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['assets']['wikipedia.article.open_graph_image']['renditions'][0]['width']"
+										},
+										"sink": {
+											"name": "width"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['assets']['wikipedia.article.open_graph_image']['source']"
+										},
+										"sink": {
+											"name": "source"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['assets']['wikipedia.article.open_graph_image']['type']"
+										},
+										"sink": {
+											"name": "type"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['attributes']['administers_executive']"
+										},
+										"sink": {
+											"name": "administers_executive"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['attributes']['de_facto_executive']"
+										},
+										"sink": {
+											"name": "de_facto_executive"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['attributes']['head_of_government']"
+										},
+										"sink": {
+											"name": "head_of_government"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['attributes']['head_of_state']"
+										},
+										"sink": {
+											"name": "head_of_state"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['attributes']['is_representative']"
+										},
+										"sink": {
+											"name": "is_representative"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['attributes']['pending_office']"
+										},
+										"sink": {
+											"name": "pending_office"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['attributes']['provisional']"
+										},
+										"sink": {
+											"name": "provisional"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['links']['wikipedia']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['leaders'][0]['links_wikipedia"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['name']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['leaders'][0]['name"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['title']"
+										},
+										"sink": {
+											"name": "title"
+										}
+									},
+									{
+										"source": {
+											"path": "[['leaders'][0]['uuid']"
+										},
+										"sink": {
+											"name": "data_objects'][0]['leaders'][0]['uuid"
+										}
+									},
+									{
+										"source": {
+											"path": "[['timezones'][0]"
+										},
+										"sink": {
+											"name": "data_objects'][0]['timezones']["
+										}
+									},
+									{
+										"source": {
+											"path": "[['tlds'][0]"
+										},
+										"sink": {
+											"name": "data_objects'][0]['tlds']["
+										}
+									}
+								],
+								"collectionReference": "$['data']['objects']"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_REST_Countries",
+								"type": "DatasetReference",
+								"parameters": {
+									"relativeUrl": {
+										"value": "@concat('?region=', pipeline().parameters.region,\n        '&limit=', string(pipeline().parameters.pageLimit),\n        '&api-key=', 'https://restapikeyvaultade.vault.azure.net/secrets/restcountries-api-key/55ec6e342d60445795700190a24b74fb')",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_Parquet_Countries",
+								"type": "DatasetReference",
+								"parameters": {
+									"fileName": {
+										"value": "@concat('countries_', pipeline().parameters.region, '.parquet')",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "Get_ApiKey",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "GET",
+							"headers": {},
+							"url": "https://restapikeyvaultade.vault.azure.net/secrets/restcountries-api-key/55ec6e342d60445795700190a24b74fb?api-version=7.0",
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://vault.azure.net"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"region": {
+						"type": "string",
+						"defaultValue": "Europe"
+					},
+					"responseFields": {
+						"type": "string",
+						"defaultValue": "names,capital,region,currencies,languages,flags"
+					},
+					"pageLimit": {
+						"type": "int",
+						"defaultValue": 100
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_REST_Countries')]",
+				"[concat(variables('factoryId'), '/datasets/DS_Parquet_Countries')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_SCD1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "PL_DF_SCD1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_SCD1",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcCustomer": {},
+									"sinkDim": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-18T08:40:55Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/DF_SCD1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_SCD2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "LKP_wm",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "SELECT last_run_ts AS wm FROM etl_control WHERE job_name='scd2_customer'",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "DS_src_customer2",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "DF_SCD2",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "LKP_wm",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_SCD2",
+								"type": "DataFlowReference",
+								"parameters": {
+									"p_watermark": {
+										"value": "'@{formatDateTime(activity('LKP_wm').output.firstRow.wm, 'yyyy-MM-dd HH:mm:ss')}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"srcCustomer": {},
+									"dimCustomer": {},
+									"sinkInsert": {},
+									"sinkExpire": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "UPD_wm",
+						"type": "Script",
+						"dependsOn": [
+							{
+								"activity": "DF_SCD2",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "AzureSqlDatabaseDS",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": "UPDATE etl_control SET last_run_ts = GETDATE() WHERE job_name='scd2_customer'"
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-18T13:36:16Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_src_customer2')]",
+				"[concat(variables('factoryId'), '/dataflows/DF_SCD2')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseDS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_SCD2_RT')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "LKP_watermark",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "DS_watermark",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "DF_SCD2_RT",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "LKP_watermark",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_SCD2_RT",
+								"type": "DataFlowReference",
+								"parameters": {
+									"p_watermark": {
+										"value": "'@{activity('LKP_watermark').output.firstRow.last_run_ts}'",
+										"type": "Expression"
+									},
+									"p_effDate": {
+										"value": "'@{formatDateTime(concat(substring(pipeline().parameters.p_fileName,15,4),'-',substring(pipeline().parameters.p_fileName,19,2),'-',substring(pipeline().parameters.p_fileName,21,2)),'yyyy-MM-dd')}'",
+										"type": "Expression"
+									},
+									"p_fileName": {
+										"value": "'@{pipeline().parameters.p_fileName}'",
+										"type": "Expression"
+									},
+									"p_batchId": {
+										"value": "'@{pipeline().RunId}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"srcCsv": {
+										"p_file": {
+											"value": "@pipeline().parameters.p_fileName",
+											"type": "Expression"
+										}
+									},
+									"dimSrc": {},
+									"sinkExpire": {},
+									"sinkInsert": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "CP_archive",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "DF_SCD2_RT",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_csv_in",
+								"type": "DatasetReference",
+								"parameters": {
+									"p_file": {
+										"value": "@pipeline().parameters.p_fileName",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_processed",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "DEL_source",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "CP_archive",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_csv_in",
+								"type": "DatasetReference",
+								"parameters": {
+									"p_file": {
+										"value": "@pipeline().parameters.p_fileName",
+										"type": "Expression"
+									}
+								}
+							},
+							"enableLogging": false,
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "CP_watermark",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "DEL_source",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "SELECT '@{formatDateTime(utcNow(),'yyyy-MM-dd HH:mm:ss')}' AS last_run_ts,\n       '@{formatDateTime(concat(substring(pipeline().parameters.p_fileName,15,4),'-',substring(pipeline().parameters.p_fileName,19,2),'-',substring(pipeline().parameters.p_fileName,21,2)),'yyyy-MM-dd')}' AS last_effective_date",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_dim_rt",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_watermark",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "WEB_success",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "CP_watermark",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {
+								"Content-Type": "application/json"
+							},
+							"url": "https://prod-115.westus.logic.azure.com:443/workflows/056053ac828741bdb448559fef12c58f/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=tCfwCCTVdaW2HXW-y3mk6hVDt0qer0SsqOtb2jJ5LaU",
+							"body": {
+								"value": "{\n \"pipeline\": \"@{pipeline().Pipeline}\",\n \"runId\": \"@{pipeline().RunId}\",\n \"status\": \"SUCCESS\",\n \"file\": \"@{pipeline().parameters.p_fileName}\",\n \"message\": \"Inserted: @{activity('DF_SCD2_RT').output.runStatus.metrics.sinkInsert.rowsWritten} | Expired: @{activity('DF_SCD2_RT').output.runStatus.metrics.sinkExpire.rowsWritten}\"\n}",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "WEB_fail",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "DF_SCD2_RT",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {
+								"Content-Type": "application/json"
+							},
+							"url": "https://prod-115.westus.logic.azure.com:443/workflows/056053ac828741bdb448559fef12c58f/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=tCfwCCTVdaW2HXW-y3mk6hVDt0qer0SsqOtb2jJ5LaU",
+							"body": {
+								"value": "{\n \"pipeline\": \"@{pipeline().Pipeline}\",\n \"runId\": \"@{pipeline().RunId}\",\n \"status\": \"FAILED\",\n \"file\": \"@{pipeline().parameters.p_fileName}\",\n \"message\": \"@{activity('DF_SCD2_RT').error.message}\"\n}",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"concurrency": 1,
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"p_fileName": {
+						"type": "string",
+						"defaultValue": "customer_delta_20260701.csv"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-20T20:06:23Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_watermark')]",
+				"[concat(variables('factoryId'), '/dataflows/DF_SCD2_RT')]",
+				"[concat(variables('factoryId'), '/datasets/DS_csv_in')]",
+				"[concat(variables('factoryId'), '/datasets/DS_processed')]",
+				"[concat(variables('factoryId'), '/datasets/DS_dim_rt')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_SCD3_CSV')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flowSCD3",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_SCD3_CSV",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcCsv": {},
+									"dimT3": {},
+									"sinkIns": {},
+									"sinkUpd": {},
+									"sinkT1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-18T20:43:27Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/DF_SCD3_CSV')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_Parquet_Countries')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorageLSAPI",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"fileName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().fileName",
+							"type": "Expression"
+						},
+						"folderPath": "countries",
+						"fileSystem": "raw"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageLSAPI')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_REST_Countries')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "RestService1",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"relativeUrl": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@dataset().relativeUrl",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/RestService1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_csv_customers')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_Blob",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "incoming",
+						"fileSystem": "scd-input"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "customer_id",
+						"type": "String"
+					},
+					{
+						"name": "customer_name",
+						"type": "String"
+					},
+					{
+						"name": "email",
+						"type": "String"
+					},
+					{
+						"name": "city",
+						"type": "String"
+					},
+					{
+						"name": "updated_at",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_Blob')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_csv_in')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_Blob",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"p_file": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().p_file",
+							"type": "Expression"
+						},
+						"folderPath": "incoming",
+						"fileSystem": "scd-input"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_Blob')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_dim_customer')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabaseDS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "customer_sk",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "customer_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "customer_name",
+						"type": "varchar"
+					},
+					{
+						"name": "email",
+						"type": "varchar"
+					},
+					{
+						"name": "city",
+						"type": "varchar"
+					},
+					{
+						"name": "load_date",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "dim_customer"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseDS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_dim_customer2')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabaseDS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "customer_sk",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "customer_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "customer_name",
+						"type": "varchar"
+					},
+					{
+						"name": "email",
+						"type": "varchar"
+					},
+					{
+						"name": "city",
+						"type": "varchar"
+					},
+					{
+						"name": "customer_tier",
+						"type": "varchar"
+					},
+					{
+						"name": "hash_scd2",
+						"type": "char"
+					},
+					{
+						"name": "effective_start_date",
+						"type": "date"
+					},
+					{
+						"name": "effective_end_date",
+						"type": "date"
+					},
+					{
+						"name": "is_current",
+						"type": "char"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "dim_customer2"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseDS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_dim_customer3')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabaseDS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "customer_sk",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "customer_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "customer_name",
+						"type": "varchar"
+					},
+					{
+						"name": "email",
+						"type": "varchar"
+					},
+					{
+						"name": "current_city",
+						"type": "varchar"
+					},
+					{
+						"name": "previous_city",
+						"type": "varchar"
+					},
+					{
+						"name": "city_change_date",
+						"type": "date"
+					},
+					{
+						"name": "source_file",
+						"type": "varchar"
+					},
+					{
+						"name": "dw_update_dt",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "dim_customer3"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseDS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_dim_rt')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabaseDS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "customer_sk",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "customer_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "customer_name",
+						"type": "varchar"
+					},
+					{
+						"name": "email",
+						"type": "varchar"
+					},
+					{
+						"name": "city",
+						"type": "varchar"
+					},
+					{
+						"name": "customer_tier",
+						"type": "varchar"
+					},
+					{
+						"name": "hash_scd2",
+						"type": "char"
+					},
+					{
+						"name": "effective_start_date",
+						"type": "date"
+					},
+					{
+						"name": "effective_end_date",
+						"type": "date"
+					},
+					{
+						"name": "is_current",
+						"type": "char"
+					},
+					{
+						"name": "source_file",
+						"type": "varchar"
+					},
+					{
+						"name": "batch_id",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "dim_customer_rt"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseDS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_processed')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_Blob",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "processed",
+						"fileSystem": "scd-input"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "customer_id",
+						"type": "String"
+					},
+					{
+						"name": "customer_name",
+						"type": "String"
+					},
+					{
+						"name": "email",
+						"type": "String"
+					},
+					{
+						"name": "city",
+						"type": "String"
+					},
+					{
+						"name": "updated_at",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_Blob')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_src_customer')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabaseDS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "customer_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "customer_name",
+						"type": "varchar"
+					},
+					{
+						"name": "email",
+						"type": "varchar"
+					},
+					{
+						"name": "city",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "src_customer"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseDS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_src_customer2')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabaseDS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "customer_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "customer_name",
+						"type": "varchar"
+					},
+					{
+						"name": "email",
+						"type": "varchar"
+					},
+					{
+						"name": "city",
+						"type": "varchar"
+					},
+					{
+						"name": "customer_tier",
+						"type": "varchar"
+					},
+					{
+						"name": "updated_at",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "src_customer2"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseDS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_watermark')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_Blob",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "watermark.csv",
+						"folderPath": "control",
+						"fileSystem": "scd-input"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "last_run_ts",
+						"type": "String"
+					},
+					{
+						"name": "last_effective_date",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_Blob')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorageLSAPI')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorageLSAPI_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDataLakeStorageLSAPI_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureKeyVault1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('AzureKeyVault1_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlDatabaseDS')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('AzureSqlDatabaseDS_properties_typeProperties_server')]",
+					"database": "[parameters('AzureSqlDatabaseDS_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('AzureSqlDatabaseDS_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('AzureSqlDatabaseDS_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_Blob')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('LS_Blob_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('LS_Blob_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RestService1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('RestService1_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/trg_customer_file')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "PL_SCD2_RT",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"p_fileName": "[parameters('trg_customer_file_properties_PL_SCD2_RT_parameters_p_fileName')]"
+						}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/scd-input/blobs/incoming/customer_delta_",
+					"blobPathEndsWith": ".csv",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('trg_customer_file_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/PL_SCD2_RT')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_SCD1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_src_customer",
+								"type": "DatasetReference"
+							},
+							"name": "srcCustomer"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_dim_customer",
+								"type": "DatasetReference"
+							},
+							"name": "sinkDim"
+						}
+					],
+					"transformations": [
+						{
+							"name": "drvAudit"
+						},
+						{
+							"name": "alterUpsert"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> srcCustomer",
+						"srcCustomer derive({load_date } = currentTimestamp()) ~> drvAudit",
+						"drvAudit alterRow(upsertIf(true())) ~> alterUpsert",
+						"alterUpsert sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string,",
+						"          load_date as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:false,",
+						"     upsertable:true,",
+						"     keys:['customer_id'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          city,",
+						"          load_date = {load_date }",
+						"     )) ~> sinkDim"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_src_customer')]",
+				"[concat(variables('factoryId'), '/datasets/DS_dim_customer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_SCD2')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_src_customer2",
+								"type": "DatasetReference"
+							},
+							"name": "srcCustomer"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_dim_customer2",
+								"type": "DatasetReference"
+							},
+							"name": "dimCustomer"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_dim_customer2",
+								"type": "DatasetReference"
+							},
+							"name": "sinkInsert"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_dim_customer2",
+								"type": "DatasetReference"
+							},
+							"name": "sinkExpire"
+						}
+					],
+					"transformations": [
+						{
+							"name": "winRank"
+						},
+						{
+							"name": "fltLatest"
+						},
+						{
+							"name": "drvHash"
+						},
+						{
+							"name": "fltCurrent"
+						},
+						{
+							"name": "lkpCurrent"
+						},
+						{
+							"name": "drvAction",
+							"description": "Creating/updating the columns 'customer_id, customer_name, email, city, customer_tier, updated_at, rn, hash_scd2, customer_sk, customer_id, customer_name, email, city, customer_tier, hash_scd2, effective_start_date, effective_end_date, is_current, action'"
+						},
+						{
+							"name": "splitAction"
+						},
+						{
+							"name": "unionNew"
+						},
+						{
+							"name": "selInsertClean"
+						},
+						{
+							"name": "selDimRename"
+						},
+						{
+							"name": "drvVersion"
+						},
+						{
+							"name": "selClean"
+						},
+						{
+							"name": "alterInsert"
+						},
+						{
+							"name": "selExpire"
+						},
+						{
+							"name": "drvExpire"
+						},
+						{
+							"name": "alterExpire"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     p_watermark as string ('1900-01-01')",
+						"}",
+						"source(output(",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string,",
+						"          customer_tier as string,",
+						"          updated_at as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: (\"SELECT * FROM src_customer2 WHERE updated_at > '{$p_watermark}'\"),",
+						"     format: 'query') ~> srcCustomer",
+						"source(output(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string,",
+						"          customer_tier as string,",
+						"          hash_scd2 as string,",
+						"          effective_start_date as date,",
+						"          effective_end_date as date,",
+						"          is_current as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> dimCustomer",
+						"srcCustomer window(over(customer_id),",
+						"     desc(updated_at, true),",
+						"     rn = rowNumber()) ~> winRank",
+						"winRank filter(rn == 1) ~> fltLatest",
+						"fltLatest derive(hash_scd2 = md5(concat(iifNull(city,'~'),'|',iifNull(customer_tier,'~')))) ~> drvHash",
+						"dimCustomer filter(is_current == 'Y') ~> fltCurrent",
+						"drvHash, selDimRename lookup(customer_id == dim_customer_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lkpCurrent",
+						"lkpCurrent derive(dim_action = iif(isNull(dim_customer_id), 'INSERT', iif(dim_hash_scd2 != hash_scd2, 'SCD2', 'NOCHANGE'))) ~> drvAction",
+						"drvAction split(dim_action == 'INSERT',",
+						"     dim_action == 'SCD2',",
+						"     disjoint: false) ~> splitAction@(streamInsert, streamSCD2, streamNoChange)",
+						"selInsertClean, splitAction@streamSCD2 union(byName: true)~> unionNew",
+						"splitAction@streamInsert select(mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          city,",
+						"          customer_tier,",
+						"          updated_at,",
+						"          rn,",
+						"          hash_scd2,",
+						"          dim_customer_sk,",
+						"          dim_customer_id,",
+						"          dim_customer_name,",
+						"          dim_email,",
+						"          dim_city,",
+						"          dim_customer_tier,",
+						"          dim_hash_scd2,",
+						"          dim_effective_start_date,",
+						"          dim_effective_end_date,",
+						"          dim_is_current,",
+						"          dim_action",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selInsertClean",
+						"fltCurrent select(mapColumn(",
+						"          dim_customer_sk = customer_sk,",
+						"          dim_customer_id = customer_id,",
+						"          dim_customer_name = customer_name,",
+						"          dim_email = email,",
+						"          dim_city = city,",
+						"          dim_customer_tier = customer_tier,",
+						"          dim_hash_scd2 = hash_scd2,",
+						"          dim_effective_start_date = effective_start_date,",
+						"          dim_effective_end_date = effective_end_date,",
+						"          dim_is_current = is_current",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selDimRename",
+						"unionNew derive(effective_start_date = currentDate(),",
+						"          effective_end_date = toDate('9999-12-31'),",
+						"          is_current = 'Y') ~> drvVersion",
+						"drvVersion select(mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          city,",
+						"          customer_tier,",
+						"          updated_at,",
+						"          hash_scd2,",
+						"          effective_start_date,",
+						"          effective_end_date,",
+						"          is_current",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selClean",
+						"selClean alterRow(insertIf(true())) ~> alterInsert",
+						"splitAction@streamSCD2 select(mapColumn(",
+						"          customer_sk = dim_customer_sk",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selExpire",
+						"selExpire derive(effective_end_date = addDays(currentDate(), -1),",
+						"          is_current = 'N') ~> drvExpire",
+						"drvExpire alterRow(updateIf(true())) ~> alterExpire",
+						"alterInsert sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string,",
+						"          customer_tier as string,",
+						"          hash_scd2 as string,",
+						"          effective_start_date as date,",
+						"          effective_end_date as date,",
+						"          is_current as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 2,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          city,",
+						"          customer_tier,",
+						"          hash_scd2,",
+						"          effective_start_date,",
+						"          effective_end_date,",
+						"          is_current",
+						"     )) ~> sinkInsert",
+						"alterExpire sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string,",
+						"          customer_tier as string,",
+						"          hash_scd2 as string,",
+						"          effective_start_date as date,",
+						"          effective_end_date as date,",
+						"          is_current as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:[('customer_sk')],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          customer_sk,",
+						"          effective_end_date,",
+						"          is_current",
+						"     )) ~> sinkExpire"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_src_customer2')]",
+				"[concat(variables('factoryId'), '/datasets/DS_dim_customer2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_SCD2_RT')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_csv_in",
+								"type": "DatasetReference"
+							},
+							"name": "srcCsv"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_dim_rt",
+								"type": "DatasetReference"
+							},
+							"name": "dimSrc"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_dim_rt",
+								"type": "DatasetReference"
+							},
+							"name": "sinkExpire"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_dim_rt",
+								"type": "DatasetReference"
+							},
+							"name": "sinkInsert"
+						}
+					],
+					"transformations": [
+						{
+							"name": "castTypes"
+						},
+						{
+							"name": "fltWatermark"
+						},
+						{
+							"name": "winRank"
+						},
+						{
+							"name": "fltLatest"
+						},
+						{
+							"name": "drvHash"
+						},
+						{
+							"name": "fltCurrent"
+						},
+						{
+							"name": "selDimRename"
+						},
+						{
+							"name": "lkpCurrent"
+						},
+						{
+							"name": "drvAction"
+						},
+						{
+							"name": "splitAction"
+						},
+						{
+							"name": "selExpire"
+						},
+						{
+							"name": "drvExpire"
+						},
+						{
+							"name": "alterExpire"
+						},
+						{
+							"name": "selInsClean"
+						},
+						{
+							"name": "selScd2Clean"
+						},
+						{
+							"name": "unionNew"
+						},
+						{
+							"name": "drvVersion"
+						},
+						{
+							"name": "selClean"
+						},
+						{
+							"name": "alterIns"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     p_watermark as string ('1900-01-01 00:00:00'),",
+						"     p_effDate as string ('2026-01-01'),",
+						"     p_fileName as string ('customer_delta_20260701.csv'),",
+						"     p_batchId as string ('manual-debug')",
+						"}",
+						"source(output(",
+						"          customer_id as short,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string,",
+						"          customer_tier as string,",
+						"          updated_at as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> srcCsv",
+						"source(output(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string,",
+						"          customer_tier as string,",
+						"          hash_scd2 as string,",
+						"          effective_start_date as date,",
+						"          effective_end_date as date,",
+						"          is_current as string,",
+						"          source_file as string,",
+						"          batch_id as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> dimSrc",
+						"srcCsv cast(output(",
+						"          customer_id as integer,",
+						"          updated_at as timestamp 'yyyy-MM-dd HH:mm:ss'",
+						"     ),",
+						"     errors: true) ~> castTypes",
+						"castTypes filter(updated_at > toTimestamp($p_watermark, 'yyyy-MM-dd HH:mm:ss')) ~> fltWatermark",
+						"fltWatermark window(over(customer_id),",
+						"     desc(updated_at, true),",
+						"     rn = rowNumber()) ~> winRank",
+						"winRank filter(rn == 1) ~> fltLatest",
+						"fltLatest derive(hash_scd2 = md5(concat(iifNull(city, '~'), '|', iifNull(customer_tier, '~')))) ~> drvHash",
+						"dimSrc filter(is_current == 'Y') ~> fltCurrent",
+						"fltCurrent select(mapColumn(",
+						"          dim_customer_sk = customer_sk,",
+						"          dim_customer_id = customer_id,",
+						"          dim_hash_scd2 = hash_scd2",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selDimRename",
+						"drvHash, selDimRename lookup(customer_id == dim_customer_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lkpCurrent",
+						"lkpCurrent derive(action = iif(isNull(dim_customer_id), 'INSERT', iif( dim_hash_scd2 != hash_scd2, 'SCD2','NOCHANGE'))) ~> drvAction",
+						"drvAction split(action == 'INSERT',",
+						"     action == 'SCD2',",
+						"     disjoint: false) ~> splitAction@(streamInsert, streamSCD2, streamNoChange)",
+						"splitAction@streamSCD2 select(mapColumn(",
+						"          customer_sk = dim_customer_sk",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selExpire",
+						"selExpire derive(effective_end_date = addDays(toDate($p_effDate), -1),",
+						"          is_current = 'N') ~> drvExpire",
+						"drvExpire alterRow(updateIf(true())) ~> alterExpire",
+						"splitAction@streamInsert select(mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          city,",
+						"          customer_tier,",
+						"          updated_at,",
+						"          hash_scd2,",
+						"          action",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selInsClean",
+						"splitAction@streamSCD2 select(mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          city,",
+						"          customer_tier,",
+						"          updated_at,",
+						"          hash_scd2,",
+						"          action",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selScd2Clean",
+						"selInsClean, selScd2Clean union(byName: true)~> unionNew",
+						"unionNew derive(effective_start_date = toDate($p_effDate),",
+						"          effective_end_date = toDate('9999-12-31'),",
+						"          is_current = 'Y',",
+						"          source_file = $p_effDate,",
+						"          batch_id = $p_batchId) ~> drvVersion",
+						"drvVersion select(mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          city,",
+						"          customer_tier,",
+						"          updated_at,",
+						"          hash_scd2,",
+						"          effective_start_date,",
+						"          effective_end_date,",
+						"          is_current,",
+						"          source_file,",
+						"          batch_id",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selClean",
+						"selClean alterRow(insertIf(true())) ~> alterIns",
+						"alterExpire sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string,",
+						"          customer_tier as string,",
+						"          hash_scd2 as string,",
+						"          effective_start_date as date,",
+						"          effective_end_date as date,",
+						"          is_current as string,",
+						"          source_file as string,",
+						"          batch_id as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:[('customer_sk')],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          customer_sk,",
+						"          effective_end_date,",
+						"          is_current",
+						"     )) ~> sinkExpire",
+						"alterIns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string,",
+						"          customer_tier as string,",
+						"          hash_scd2 as string,",
+						"          effective_start_date as date,",
+						"          effective_end_date as date,",
+						"          is_current as string,",
+						"          source_file as string,",
+						"          batch_id as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 2,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          city,",
+						"          customer_tier,",
+						"          hash_scd2,",
+						"          effective_start_date,",
+						"          effective_end_date,",
+						"          is_current,",
+						"          source_file,",
+						"          batch_id",
+						"     )) ~> sinkInsert"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_csv_in')]",
+				"[concat(variables('factoryId'), '/datasets/DS_dim_rt')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_SCD3_CSV')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_csv_customers",
+								"type": "DatasetReference"
+							},
+							"name": "srcCsv"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_dim_customer3",
+								"type": "DatasetReference"
+							},
+							"name": "dimT3"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_dim_customer3",
+								"type": "DatasetReference"
+							},
+							"name": "sinkIns"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_dim_customer3",
+								"type": "DatasetReference"
+							},
+							"name": "sinkUpd",
+							"rejectedDataLinkedService": {
+								"referenceName": "LS_Blob",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_dim_customer3",
+								"type": "DatasetReference"
+							},
+							"name": "sinkT1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "castTypes"
+						},
+						{
+							"name": "winRank"
+						},
+						{
+							"name": "fltLatest"
+						},
+						{
+							"name": "selDimRename"
+						},
+						{
+							"name": "lkpDim"
+						},
+						{
+							"name": "drvAction"
+						},
+						{
+							"name": "splitAction"
+						},
+						{
+							"name": "drvInit"
+						},
+						{
+							"name": "selIns"
+						},
+						{
+							"name": "alterIns"
+						},
+						{
+							"name": "drvShift"
+						},
+						{
+							"name": "selShift"
+						},
+						{
+							"name": "alterUpd"
+						},
+						{
+							"name": "selT1"
+						},
+						{
+							"name": "derivedT1"
+						},
+						{
+							"name": "alterT1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          customer_id as string,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          city as string,",
+						"          updated_at as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     moveFiles: ['incoming','processed'],",
+						"     rowUrlColumn: 'source_file',",
+						"     wildcardPaths:['incoming/customers_*.csv']) ~> srcCsv",
+						"source(output(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          current_city as string,",
+						"          previous_city as string,",
+						"          city_change_date as date,",
+						"          source_file as string,",
+						"          dw_update_dt as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> dimT3",
+						"srcCsv cast(output(",
+						"          customer_id as integer,",
+						"          updated_at as timestamp 'yyyy-MM-dd HH:mm:ss'",
+						"     ),",
+						"     errors: true) ~> castTypes",
+						"castTypes window(over(customer_id),",
+						"     asc(updated_at, true),",
+						"     rn = rowNumber()) ~> winRank",
+						"winRank filter(rn == 1) ~> fltLatest",
+						"dimT3 select(mapColumn(",
+						"          dim_customer_id = customer_id,",
+						"          dim_email = email,",
+						"          dim_current_city = current_city,",
+						"          dim_previous_city = previous_city",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selDimRename",
+						"fltLatest, selDimRename lookup(customer_id == dim_customer_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lkpDim",
+						"lkpDim derive(action = iif(isNull(dim_customer_id), 'INSERT', iif(dim_current_city != city, 'SHIFT', iif(dim_email != email, 'T1', 'NOCHANGE')))) ~> drvAction",
+						"drvAction split(action == 'INSERT',",
+						"     action == 'SHIFT',",
+						"     action == 'T1',",
+						"     disjoint: false) ~> splitAction@(streamInsert, streamShift, streamT1, streamNoChange)",
+						"splitAction@streamInsert derive(current_city = city,",
+						"          previous_city = toString(null()),",
+						"          dw_update_dt = currentTimestamp()) ~> drvInit",
+						"drvInit select(mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          source_file,",
+						"          action,",
+						"          current_city,",
+						"          previous_city,",
+						"          dw_update_dt",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selIns",
+						"selIns alterRow(insertIf(true())) ~> alterIns",
+						"splitAction@streamShift derive(previous_city = dim_current_city,",
+						"          current_city = city,",
+						"          city_change_date = currentDate(),",
+						"          dw_update_dt = currentTimestamp()) ~> drvShift",
+						"drvShift select(mapColumn(",
+						"          customer_id,",
+						"          email,",
+						"          dw_update_dt",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selShift",
+						"selShift alterRow(updateIf(true())) ~> alterUpd",
+						"splitAction@streamT1 select(mapColumn(",
+						"          customer_id,",
+						"          email",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selT1",
+						"selT1 derive(dw_update_dt = currentTimestamp()) ~> derivedT1",
+						"derivedT1 alterRow(updateIf(true())) ~> alterT1",
+						"alterIns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          current_city as string,",
+						"          previous_city as string,",
+						"          city_change_date as date,",
+						"          source_file as string,",
+						"          dw_update_dt as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          customer_id,",
+						"          customer_name,",
+						"          email,",
+						"          current_city,",
+						"          previous_city,",
+						"          source_file,",
+						"          dw_update_dt",
+						"     )) ~> sinkIns",
+						"alterUpd sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          current_city as string,",
+						"          previous_city as string,",
+						"          city_change_date as date,",
+						"          source_file as string,",
+						"          dw_update_dt as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:['customer_id'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sinkUpd",
+						"alterT1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          customer_sk as integer,",
+						"          customer_id as integer,",
+						"          customer_name as string,",
+						"          email as string,",
+						"          current_city as string,",
+						"          previous_city as string,",
+						"          city_change_date as date,",
+						"          source_file as string,",
+						"          dw_update_dt as timestamp",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:['customer_id'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          customer_id,",
+						"          email,",
+						"          dw_update_dt",
+						"     )) ~> sinkT1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_csv_customers')]",
+				"[concat(variables('factoryId'), '/datasets/DS_dim_customer3')]",
+				"[concat(variables('factoryId'), '/linkedServices/LS_Blob')]"
+			]
+		}
+	]
+}

@@ -142,7 +142,7 @@
 				"          customer_tier,",
 				"          updated_at,",
 				"          rn,",
-				"          hash_scd2 = {splitAction@streamInsert@hash_scd2},",
+				"          hash_scd2,",
 				"          dim_customer_sk,",
 				"          dim_customer_id,",
 				"          dim_customer_name,",

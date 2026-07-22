@@ -1,0 +1,58 @@
+{
+	"name": "TR_Countries_TwiceDaily_IST",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "PL_Copy_Countries_ByName_To_ADLS",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"ApiKey": "rc_live_89b0549fc51240de893ec9855404d51a",
+					"CountryList": [
+						{
+							"lookup": "India",
+							"file": "india"
+						},
+						{
+							"lookup": "United States",
+							"file": "us"
+						},
+						{
+							"lookup": "United Kingdom",
+							"file": "uk"
+						},
+						{
+							"lookup": "China",
+							"file": "china"
+						},
+						{
+							"lookup": "Russia",
+							"file": "russia"
+						}
+					]
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2026-07-22T00:00:00",
+				"timeZone": "India Standard Time",
+				"schedule": {
+					"minutes": [
+						0
+					],
+					"hours": [
+						0,
+						12
+					]
+				}
+			}
+		}
+	}
+}

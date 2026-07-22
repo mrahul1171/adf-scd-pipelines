@@ -69,7 +69,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"FileName": {
-											"value": "@item().file",
+											"value": "@concat(item().file, '_', formatDateTime(utcNow(), 'yyyyMMdd_HHmm'))",
 											"type": "Expression"
 										}
 									}

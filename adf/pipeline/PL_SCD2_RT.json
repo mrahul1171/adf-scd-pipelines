@@ -318,7 +318,7 @@
 					},
 					"url": "https://prod-115.westus.logic.azure.com:443/workflows/056053ac828741bdb448559fef12c58f/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=tCfwCCTVdaW2HXW-y3mk6hVDt0qer0SsqOtb2jJ5LaU",
 					"body": {
-						"value": "{\n \"pipeline\": \"@{pipeline().Pipeline}\",\n \"runId\": \"@{pipeline().RunId}\",\n \"status\": \"FAILED\",\n \"file\": \"@{pipeline().parameters.p_fileName}\",\n \"message\": \"@{activity('DF_SCD2_RT').error.message}\"\n}",
+						"value": "{\n \"pipeline\": \"PL_SCD2_RT\",\n \"runId\": \"@{pipeline().RunId}\",\n \"status\": \"FAILED\",\n \"file\": \"@{pipeline().parameters.p_fileName}\",\n \"message\": \"@{substring(replace(replace(activity('DF_SCD2_RT').Error.Message,'\\\"',''''),'\\\\','/'),0,min(800,length(activity('DF_SCD2_RT').Error.Message)))}\"\n}",
 						"type": "Expression"
 					}
 				}

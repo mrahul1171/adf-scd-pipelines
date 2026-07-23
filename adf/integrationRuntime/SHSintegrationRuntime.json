@@ -1,7 +1,0 @@
-{
-	"name": "SHSintegrationRuntime",
-	"properties": {
-		"type": "SelfHosted",
-		"description": "SHSintegrationRuntime"
-	}
-}
